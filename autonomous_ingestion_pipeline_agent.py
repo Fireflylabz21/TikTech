@@ -2,7 +2,8 @@
 TikTech - Autonomous Technical News Ingestion & Summarization Pipeline
 Zero-Dollar Architecture Implementation:
 - Ingests arXiv, RSS Feeds, GitHub Releases
-- Summarizes using Google Gemini API with Automatic Model Fallbacks (gemini-3.8-flash, gemini-3.5-flash, gemini-2.5-flash, gemini-1.5-flash)
+- Summarizes using Google Gemini API with automatic model fallbacks,
+  falling back to Groq API (Llama 3.3 70B) if Gemini fails.
 - Generates 384-dim dense vectors via HuggingFace Free Inference API
 - Stores output into Neon Serverless Postgres (pgvector) & cloud JSON static feeds
 """
@@ -20,7 +21,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 # ============================================================================
-# 1. Pydantic Models for Gemini Structured Extraction
+# 1. Pydantic Models for Structured Extraction
 # ============================================================================
 class TechnicalArticleAnalysis(BaseModel):
     title: str = Field(description="Clear, high-impact headline for developers")
@@ -68,27 +69,34 @@ def fetch_arxiv_papers(query="cat:cs.AI OR cat:cs.CL OR cat:cs.LG", max_results=
     return papers
 
 # ============================================================================
-# 3. Gemini Pipeline Integration with Automatic Model Fallbacks
+# 3. LLM Pipeline Integration (Gemini with Groq API Fallback)
 # ============================================================================
-def analyze_article_with_gemini(raw_text: str, gemini_api_key: str) -> Optional[TechnicalArticleAnalysis]:
-    """Sends raw paper/article text to Gemini with automatic fallback across latest flash models."""
-    models_to_try = [
+def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: Optional[str] = None) -> Optional[TechnicalArticleAnalysis]:
+    """
+    Sends raw paper/article text to Gemini with automatic fallback across models.
+    If Gemini exhausts all fallbacks, falls back to Groq API (Llama 3.3 70B).
+    """
+    prompt = f"""
+    You are an expert AI Lead Architect. Analyze the following technical document and extract structured insights for a developer news app.
+    Focus strictly on code, hardware benchmarks, real-world case studies, and security vulnerabilities.
+    Ensure category is exactly one of: 'casestudies', 'security', 'compliance', 'infra', 'models', 'industry'.
+    Ensure depth_level is exactly one of: 'L1 OVERVIEW', 'L2 DEEP DIVE', 'L3 MATH/KERNEL'.
+    Return ONLY valid JSON matching the required schema keys: title, source_name, category, depth_level, tldr, takeaways, code_snippet, full_analysis, metric_label, metric_value, github_repo_name, github_repo_url.
+
+    Document Text:
+    {raw_text[:4000]}
+    """
+
+    # ------------------------------------------------------------------------
+    # 3.1 Try Gemini Models First
+    # ------------------------------------------------------------------------
+    gemini_models = [
         "gemini-3.8-flash",
         "gemini-3.5-flash",
         "gemini-2.5-flash",
         "gemini-1.5-flash",
         "gemini-1.5-pro"
     ]
-    
-    prompt = f"""
-    You are an expert AI Lead Architect. Analyze the following technical document and extract structured insights for a developer news app.
-    Focus strictly on code, hardware benchmarks, real-world case studies, and security vulnerabilities.
-    Ensure category is exactly one of: 'casestudies', 'security', 'compliance', 'infra', 'models', 'industry'.
-    Ensure depth_level is exactly one of: 'L1 OVERVIEW', 'L2 DEEP DIVE', 'L3 MATH/KERNEL'.
-
-    Document Text:
-    {raw_text[:4000]}
-    """
 
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -98,24 +106,66 @@ def analyze_article_with_gemini(raw_text: str, gemini_api_key: str) -> Optional[
         }
     }
 
-    for model_name in models_to_try:
+    for model_name in gemini_models:
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_api_key}"
         try:
             res = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=15)
             if res.status_code == 200:
                 data = res.json()
                 raw_json = data['candidates'][0]['content']['parts'][0]['text']
+                print(f"      ✔ Successfully parsed via Gemini ({model_name})")
                 return TechnicalArticleAnalysis.model_validate_json(raw_json)
             elif res.status_code == 404:
-                print(f"[-] Model '{model_name}' not found (404), trying next fallback...")
                 continue
             else:
-                print(f"[!] Gemini API Error ({model_name}) [{res.status_code}]: {res.text}")
+                print(f"[-] Gemini API Error ({model_name}) [{res.status_code}]: {res.text}")
         except Exception as e:
-            print(f"[!] Failed to parse Gemini response with '{model_name}': {e}")
             continue
 
-    print("[!] All Gemini model fallbacks exhausted.")
+    print("[-] All Gemini models failed. Falling back to Groq API...")
+
+    # ------------------------------------------------------------------------
+    # 3.2 Fallback to Groq API (Llama 3.3 70B Versatile)
+    # ------------------------------------------------------------------------
+    if not groq_api_key or groq_api_key == "DEMO_KEY":
+        groq_api_key = os.getenv("GROQ_API_KEY")
+
+    if not groq_api_key:
+        print("[!] Groq API key not provided. Fallback failed.")
+        return None
+
+    groq_url = "https://api.groq.com/openai/v1/chat/completions"
+    groq_headers = {
+        "Authorization": f"Bearer {groq_api_key}",
+        "Content-Type": "application/json"
+    }
+    groq_payload = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are an expert AI Lead Architect. You must output valid JSON matching the requested developer news schema strictly."
+            },
+            {
+                "role": "user",
+                "content": prompt + "\n\nSchema Requirements:\n" + json.dumps(TechnicalArticleAnalysis.model_json_schema(), indent=2)
+            }
+        ],
+        "response_format": {"type": "json_object"}
+    }
+
+    try:
+        res = requests.post(groq_url, json=groq_payload, headers=groq_headers, timeout=20)
+        if res.status_code == 200:
+            data = res.json()
+            raw_json = data['choices'][0]['message']['content']
+            print("      ✔ Successfully parsed via Groq API (Llama 3.3 70B)")
+            return TechnicalArticleAnalysis.model_validate_json(raw_json)
+        else:
+            print(f"[!] Groq API Error [{res.status_code}]: {res.text}")
+    except Exception as e:
+        print(f"[!] Failed to parse Groq response: {e}")
+
     return None
 
 # ============================================================================
@@ -209,10 +259,11 @@ def save_to_neon_db(article_payload: dict, embedding: list):
 # ============================================================================
 def run_pipeline():
     print("=" * 60)
-    print("🚀 DeepIndex AI: Starting Automated Ingestion Pipeline")
+    print("🚀 TikTech: Starting Automated Ingestion Pipeline")
     print("=" * 60)
 
     gemini_key = os.getenv("GEMINI_API_KEY", "DEMO_KEY")
+    groq_key = os.getenv("GROQ_API_KEY", "DEMO_KEY")
     hf_token = os.getenv("HF_TOKEN", "DEMO_TOKEN")
 
     # Step 1: Ingest
@@ -226,7 +277,7 @@ def run_pipeline():
     for idx, paper in enumerate(papers, 1):
         print(f"\n[2/4] Processing Item {idx}/{len(papers)}: {paper['title'][:50]}...")
         
-        analysis = analyze_article_with_gemini(paper['raw_text'], gemini_key)
+        analysis = analyze_article_with_llm(paper['raw_text'], gemini_key, groq_key)
         
         if analysis:
             print(f"      ✔ Analyzed as [{analysis.category.upper()}] - {analysis.depth_level}")
