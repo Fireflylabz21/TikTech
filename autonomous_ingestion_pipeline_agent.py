@@ -2,7 +2,7 @@
 TikTech - Autonomous Technical News Ingestion & Summarization Pipeline
 Zero-Dollar Architecture Implementation:
 - Ingests arXiv, RSS Feeds, GitHub Releases
-- Summarizes using Google Gemini 2.5 Flash API (Structured Pydantic Output)
+- Summarizes using Google Gemini API with Automatic Model Fallbacks (gemini-3.8-flash, gemini-3.5-flash, gemini-2.5-flash, gemini-1.5-flash)
 - Generates 384-dim dense vectors via HuggingFace Free Inference API
 - Stores output into Neon Serverless Postgres (pgvector) & cloud JSON static feeds
 """
@@ -68,11 +68,17 @@ def fetch_arxiv_papers(query="cat:cs.AI OR cat:cs.CL OR cat:cs.LG", max_results=
     return papers
 
 # ============================================================================
-# 3. Gemini Pipeline Integration (Optimized Prompt)
+# 3. Gemini Pipeline Integration with Automatic Model Fallbacks
 # ============================================================================
 def analyze_article_with_gemini(raw_text: str, gemini_api_key: str) -> Optional[TechnicalArticleAnalysis]:
-    """Sends raw paper/article text to Gemini 2.5 Flash for structured JSON extraction."""
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}"
+    """Sends raw paper/article text to Gemini with automatic fallback across latest flash models."""
+    models_to_try = [
+        "gemini-3.8-flash",
+        "gemini-3.5-flash",
+        "gemini-2.5-flash",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro"
+    ]
     
     prompt = f"""
     You are an expert AI Lead Architect. Analyze the following technical document and extract structured insights for a developer news app.
@@ -92,16 +98,24 @@ def analyze_article_with_gemini(raw_text: str, gemini_api_key: str) -> Optional[
         }
     }
 
-    try:
-        res = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=15)
-        if res.status_code == 200:
-            data = res.json()
-            raw_json = data['candidates'][0]['content']['parts'][0]['text']
-            return TechnicalArticleAnalysis.model_validate_json(raw_json)
-        else:
-            print(f"[!] Gemini API Error ({res.status_code}): {res.text}")
-    except Exception as e:
-        print(f"[!] Failed to parse Gemini response: {e}")
+    for model_name in models_to_try:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_api_key}"
+        try:
+            res = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=15)
+            if res.status_code == 200:
+                data = res.json()
+                raw_json = data['candidates'][0]['content']['parts'][0]['text']
+                return TechnicalArticleAnalysis.model_validate_json(raw_json)
+            elif res.status_code == 404:
+                print(f"[-] Model '{model_name}' not found (404), trying next fallback...")
+                continue
+            else:
+                print(f"[!] Gemini API Error ({model_name}) [{res.status_code}]: {res.text}")
+        except Exception as e:
+            print(f"[!] Failed to parse Gemini response with '{model_name}': {e}")
+            continue
+
+    print("[!] All Gemini model fallbacks exhausted.")
     return None
 
 # ============================================================================
