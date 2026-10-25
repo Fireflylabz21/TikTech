@@ -3,7 +3,7 @@ TikTech - Autonomous Technical News Ingestion & Summarization Pipeline
 Zero-Dollar Architecture Implementation:
 - Ingests arXiv, RSS Feeds, GitHub Releases
 - Summarizes using Google Gemini API with automatic model fallbacks,
-  falling back to Groq API (Llama 3.3 70B) if Gemini fails.
+  falling back to Groq API (with automatic Llama model fallbacks) if Gemini fails.
 - Generates 384-dim dense vectors via HuggingFace Free Inference API
 - Stores output into Neon Serverless Postgres (pgvector) & cloud JSON static feeds
 """
@@ -69,12 +69,12 @@ def fetch_arxiv_papers(query="cat:cs.AI OR cat:cs.CL OR cat:cs.LG", max_results=
     return papers
 
 # ============================================================================
-# 3. LLM Pipeline Integration (Gemini with Groq API Fallback)
+# 3. LLM Pipeline Integration (Gemini + Groq with Model Fallbacks)
 # ============================================================================
 def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: Optional[str] = None) -> Optional[TechnicalArticleAnalysis]:
     """
-    Sends raw paper/article text to Gemini with automatic fallback across models.
-    If Gemini exhausts all fallbacks, falls back to Groq API (Llama 3.3 70B).
+    Sends raw paper/article text to Gemini with automatic model fallbacks.
+    If all Gemini models fail, falls back to Groq API with automatic model fallbacks.
     """
     prompt = f"""
     You are an expert AI Lead Architect. Analyze the following technical document and extract structured insights for a developer news app.
@@ -125,7 +125,7 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
     print("[-] All Gemini models failed. Falling back to Groq API...")
 
     # ------------------------------------------------------------------------
-    # 3.2 Fallback to Groq API (Llama 3.3 70B Versatile)
+    # 3.2 Fallback to Groq API with Model Fallback List
     # ------------------------------------------------------------------------
     if not groq_api_key or groq_api_key == "DEMO_KEY":
         groq_api_key = os.getenv("GROQ_API_KEY")
@@ -134,38 +134,52 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
         print("[!] Groq API key not provided. Fallback failed.")
         return None
 
+    groq_models = [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-70b-versatile",
+        "llama3-70b-8192",
+        "llama-3.1-8b-instant",
+        "mixtral-8x7b-32768"
+    ]
+
     groq_url = "https://api.groq.com/openai/v1/chat/completions"
     groq_headers = {
         "Authorization": f"Bearer {groq_api_key}",
         "Content-Type": "application/json"
     }
-    groq_payload = {
-        "model": "llama-3.3-70b-versatile",
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are an expert AI Lead Architect. You must output valid JSON matching the requested developer news schema strictly."
-            },
-            {
-                "role": "user",
-                "content": prompt + "\n\nSchema Requirements:\n" + json.dumps(TechnicalArticleAnalysis.model_json_schema(), indent=2)
-            }
-        ],
-        "response_format": {"type": "json_object"}
-    }
 
-    try:
-        res = requests.post(groq_url, json=groq_payload, headers=groq_headers, timeout=20)
-        if res.status_code == 200:
-            data = res.json()
-            raw_json = data['choices'][0]['message']['content']
-            print("      ✔ Successfully parsed via Groq API (Llama 3.3 70B)")
-            return TechnicalArticleAnalysis.model_validate_json(raw_json)
-        else:
-            print(f"[!] Groq API Error [{res.status_code}]: {res.text}")
-    except Exception as e:
-        print(f"[!] Failed to parse Groq response: {e}")
+    for groq_model in groq_models:
+        groq_payload = {
+            "model": groq_model,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "You are an expert AI Lead Architect. You must output valid JSON matching the requested developer news schema strictly."
+                },
+                {
+                    "role": "user",
+                    "content": prompt + "\n\nSchema Requirements:\n" + json.dumps(TechnicalArticleAnalysis.model_json_schema(), indent=2)
+                }
+            ],
+            "response_format": {"type": "json_object"}
+        }
 
+        try:
+            res = requests.post(groq_url, json=groq_payload, headers=groq_headers, timeout=20)
+            if res.status_code == 200:
+                data = res.json()
+                raw_json = data['choices'][0]['message']['content']
+                print(f"      ✔ Successfully parsed via Groq API ({groq_model})")
+                return TechnicalArticleAnalysis.model_validate_json(raw_json)
+            elif res.status_code == 404 or res.status_code == 400:
+                print(f"[-] Groq model '{groq_model}' not available, trying next fallback...")
+                continue
+            else:
+                print(f"[!] Groq API Error ({groq_model}) [{res.status_code}]: {res.text}")
+        except Exception as e:
+            continue
+
+    print("[!] All Groq and Gemini model fallbacks exhausted.")
     return None
 
 # ============================================================================
