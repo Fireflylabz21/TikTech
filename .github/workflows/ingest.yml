@@ -2,12 +2,14 @@ name: TikTech Ingestion Cron
 
 on:
   schedule:
-    - cron: '0 */6 * * *'  
+    - cron: '0 */3 * * *'  # Every 3 hours
   workflow_dispatch:
 
 jobs:
   ingest:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Allow GitHub Actions to commit files
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -29,3 +31,11 @@ jobs:
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
         run: |
           python autonomous_ingestion_pipeline_agent.py
+
+      - name: Commit & Push feed_latest.json
+        run: |
+          git config --global user.name "TikTech Ingestion Bot"
+          git config --global user.email "bot@tiktech.ai"
+          git add feed_latest.json
+          git diff --staged --quiet || git commit -m "chore: auto-update latest technical feed [skip ci]"
+          git push
