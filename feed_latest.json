@@ -1,25 +1,49 @@
 [
   {
-    "id": "0fb4422291c1b4f063d6a720463f7a9f",
+    "id": "e1380f38e0aab5d00cdb3ccca004396e",
     "source": "ARXIV",
-    "title": "LGMT: Metamorphic Testing Tool Exposes Up to 29.44% Logical Inconsistencies in LLMs",
+    "title": "SceneBloom: Agentic 3D Indoor Scene Generation with Zero Collisions for Embodied AI",
     "category": "models",
     "depth": "L2 DEEP DIVE",
-    "tldr": "LGMT is an open-source tool designed to evaluate the logical reasoning reliability of LLMs using metamorphic testing grounded in first-order logic. By generating logically equivalent variants of premise-conclusion pairs without needing ground-truth labels, LGMT checks for internal logical contradictions across model outputs. Empirical evaluation across six popular LLMs on 3,091 metamorphic groups revealed inconsistency rates between 20.84% and 29.44%.",
+    "tldr": "SceneBloom combines diffusion-based layout sampling with contract-guided 3D compilation to produce physically realistic indoor environments. The generated scenes feature zero mesh collisions and improve real-world transfer for embodied navigation policies.",
     "takeaways": [
-      "Utilizes 20 built-in metamorphic relations grounded in first-order logic and supports custom relations verified via the Z3 theorem prover.",
-      "Evaluates LLM logical entailment predictions without requiring ground-truth labels by checking consistency across transformed follow-up test cases.",
-      "Revealed high logical inconsistency rates (20.84% to 29.44%) across six leading LLMs evaluated on 3,091 metamorphic test groups."
+      "Hierarchical sampling uses diffusion priors to generate furniture layouts within functional zones.",
+      "Contract-guided 3D compiler optimizes spatial relations to achieve zero mesh collisions and zero out-of-bounds objects.",
+      "Navigation policies trained on SceneBloom synthetic layouts outperform those trained on an equal number of real-world scans."
     ],
-    "code": "# Pseudocode illustration of LGMT execution flow\nfrom lgmt import MetamorphicTester, Z3Verifier\n\ntester = MetamorphicTester(model_id=\"gpt-4o\", offline_mode=False)\nrelation = tester.load_relation(\"contraposition\")\nassert Z3Verifier.verify(relation.logic_formula)\n\nsource_case = {\"premise\": \"If P then Q. P is True.\", \"conclusion\": \"Q is True.\"}\nfollowup_case = relation.transform(source_case)\n\ninconsistent = tester.check_consistency(source_case, followup_case)",
-    "fullAnalysis": "Large Language Models are increasingly integrated into modern software systems as reasoning components, yet static benchmarks evaluate queries in isolation and fail to expose internal contradictions. LGMT addresses this limitation by introducing metamorphic testing grounded in first-order logic for LLMs. Given a source test case in premise-conclusion form, LGMT generates logically equivalent follow-up test cases and checks whether the model's entailment predictions remain consistent across the pair, operating completely without ground-truth labels.\\n\\nThe framework features 20 built-in metamorphic relations, supports user-defined custom relations verified by the Z3 theorem prover, and includes CLI, web studio, and offline mock execution modes. Across six widely used LLMs evaluated on a bundled benchmark of 3,091 metamorphic groups, LGMT uncovered logical inconsistency rates ranging from 20.84% to 29.44%, highlighting significant reliability risks when deploying LLMs for logical reasoning tasks.",
+    "code": "def compile_scene(diffusion_proposal, assets): relations = extract_relations(diffusion_proposal); return optimize_poses(relations, assets)",
+    "fullAnalysis": "SceneBloom bridges the gap between text/image-guided generative models and physically compliant 3D simulation environments needed for embodied agent training. The framework operates in two main stages: a hierarchical diffusion sampler proposes spatial object arrangements within designated functional zones, and a contract-guided compiler translates these relational layout proposals into precise 3D object poses. By optimizing spatial contracts derived from visual priors, the compiler enforces physical validity without manual tweaking. Evaluation across five standard room types demonstrates that SceneBloom achieves superior visual realism and physical stability compared to existing baselines. Notably, it is the only framework evaluated that achieves complete elimination of object collisions and bounding errors. Furthermore, object navigation policies trained using SceneBloom generated scenes achieve higher success rates when evaluated on held-out physical scans than policies trained on equal amounts of real training environment data.",
     "metric": {
-      "label": "Logical Inconsistency Rate",
-      "val": "20.84% - 29.44%"
+      "label": "Mesh Collision Rate",
+      "val": "0%"
     },
     "repo": {
-      "name": "MaxwelsDonc/lgmt-tool",
-      "url": "https://github.com/MaxwelsDonc/lgmt-tool",
+      "name": "Tinaliu0123/scenebloom",
+      "url": "https://github.com/Tinaliu0123/scenebloom",
+      "stars": "1.5k"
+    }
+  },
+  {
+    "id": "d7b43246944ff47ed8a827d767aa4385",
+    "source": "ARXIV",
+    "title": "RobustRLlib: Unified Library and Benchmark for Robust Reinforcement Learning",
+    "category": "models",
+    "depth": "L2 DEEP DIVE",
+    "tldr": "RobustRLlib is an algorithm-centric library and benchmark unifying 17 robust online, offline, and safe reinforcement learning algorithms under a standardized interface. It provides an extensive evaluation platform across 273 perturbation configurations to pinpoint current robustness gaps in real-world deployment scenarios. The benchmark covers advanced evaluation domains including humanoid control and vision-language-action tasks.",
+    "takeaways": [
+      "Integrates 17 robust online, offline, and safe RL algorithms under a unified, reusable interface.",
+      "Evaluates algorithmic resilience across 273 systematic perturbation configurations.",
+      "Spans advanced control tasks including humanoid locomotion and vision-language-action (VLA) environments."
+    ],
+    "code": "import robust_rllib\\n\\n# Initialize a robust RL trainer with unified perturbation specs\\ntrainer = robust_rllib.make_trainer(\\n    algorithm=\"RobustPPO\",\\n    env_id=\"HumanoidVLA-v1\",\\n    perturbation_config={\"type\": \"action_noise\", \"severity\": 0.2}\\n)\\ntrainer.train(total_timesteps=1000000)",
+    "fullAnalysis": "RobustRLlib addresses major hurdles in robust reinforcement learning by standardizing algorithm implementations and empirical evaluation. Prior efforts suffered from fragmentation across disparate codebases and inconsistent evaluation protocols, making fair comparison difficult. By providing a unified interface across 17 distinct robust online, offline, and safe RL algorithms, the library drastically improves code reusability and accelerates development cycles for AI researchers.\\n\\nThe library introduces a comprehensive benchmark platform encompassing 273 perturbation configurations spanning sensor noise, environmental shifts, dynamic variations, and adversarial attacks. Systematic testing on complex environments, such as humanoid robotics and vision-language-action agents, provides crucial insight into where contemporary robust RL approaches succeed and where significant performance degradation still occurs.",
+    "metric": {
+      "label": "Perturbation Configurations",
+      "val": "273"
+    },
+    "repo": {
+      "name": "RobustRLlib",
+      "url": "https://github.com/RobustRLlib/RobustRLlib",
       "stars": "1.5k"
     }
   }
