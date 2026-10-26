@@ -20,6 +20,18 @@ from typing import List, Optional
 from datetime import datetime
 from pydantic import BaseModel, Field
 
+# Load .env file locally if present
+if os.path.exists(".env"):
+    try:
+        with open(".env", "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+    except Exception:
+        pass
+
 # ============================================================================
 # 1. Pydantic Models for Structured Extraction
 # ============================================================================
@@ -94,9 +106,10 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
     # 3.1 Try Gemini Models (v1 and v1beta endpoints with x-goog-api-key header)
     # ------------------------------------------------------------------------
     gemini_models = [
-        "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro"
+        "gemini-3.8-flash",
+        "gemini-3.7-flash",
+        "gemini-3.5-flash",
+        "gemini-2.5-flash"
     ]
 
     payload = {
@@ -133,6 +146,7 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
                     # Print warning for non-404 errors but continue trying other models/endpoints
                     print(f"[-] Gemini API Error ({model_name}) [{res.status_code}]: {res.text}")
             except Exception as e:
+                print(f"[-] Gemini Exception ({model_name}): {e}")
                 continue
 
     print("[-] All Gemini models and endpoints failed. Falling back to Groq API...")
@@ -150,11 +164,10 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
     groq_api_key = groq_api_key.strip()
 
     groq_models = [
-        "llama-3.3-70b-versatile",
-        "llama-3.1-70b-versatile",
-        "llama3-70b-8192",
-        "llama-3.1-8b-instant",
-        "mixtral-8x7b-32768"
+        "openai/gpt-oss-20b",
+        "openai/gpt-oss-120b",
+        "qwen/qwen3.8-27b",
+        "allam-2-7b"
     ]
 
     groq_url = "https://api.groq.com/openai/v1/chat/completions"
@@ -192,6 +205,7 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
             else:
                 print(f"[!] Groq API Error ({groq_model}) [{res.status_code}]: {res.text}")
         except Exception as e:
+            print(f"[-] Groq Exception ({groq_model}): {e}")
             continue
 
     print("[!] All Groq and Gemini model fallbacks exhausted.")
