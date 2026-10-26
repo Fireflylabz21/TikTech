@@ -94,9 +94,7 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
     # 3.1 Try Gemini Models (v1 and v1beta endpoints with x-goog-api-key header)
     # ------------------------------------------------------------------------
     gemini_models = [
-        "gemini-3.8-flash",
-        "gemini-3.5-flash",
-        "gemini-2.5-flash",
+        "gemini-2.0-flash",
         "gemini-1.5-flash",
         "gemini-1.5-pro"
     ]
@@ -152,7 +150,6 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
     groq_api_key = groq_api_key.strip()
 
     groq_models = [
-        "meta-llama/llama-4-scout-17b-16e-instruct",
         "llama-3.3-70b-versatile",
         "llama-3.1-70b-versatile",
         "llama3-70b-8192",
