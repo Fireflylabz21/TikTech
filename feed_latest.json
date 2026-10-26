@@ -2,19 +2,19 @@
   {
     "id": "e1380f38e0aab5d00cdb3ccca004396e",
     "source": "ARXIV",
-    "title": "SceneBloom: Agentic 3D Indoor Scene Generation with Zero Collisions for Embodied AI",
+    "title": "SceneBloom: Agentic Indoor Environment Generation with Realistic and Diverse Layouts for Embodied Learning",
     "category": "models",
     "depth": "L2 DEEP DIVE",
-    "tldr": "SceneBloom combines diffusion-based layout sampling with contract-guided 3D compilation to produce physically realistic indoor environments. The generated scenes feature zero mesh collisions and improve real-world transfer for embodied navigation policies.",
+    "tldr": "SceneBloom is an agentic framework that generates realistic, simulation-ready 3D indoor environments by combining visual layout sampling with contract-guided 3D compilation. Using diffusion priors within functional zones alongside geometric fitting, it achieves zero mesh collisions or out-of-bounds objects across tests. Embodied navigation agents trained in SceneBloom environments outperform policies trained directly on real-world training scans.",
     "takeaways": [
-      "Hierarchical sampling uses diffusion priors to generate furniture layouts within functional zones.",
-      "Contract-guided 3D compiler optimizes spatial relations to achieve zero mesh collisions and zero out-of-bounds objects.",
-      "Navigation policies trained on SceneBloom synthetic layouts outperform those trained on an equal number of real-world scans."
+      "Combines hierarchical diffusion layout sampling with contract-guided 3D object pose compilation.",
+      "Achieves 0% mesh collisions and 0% out-of-bounds objects across five distinct room types.",
+      "Navigation policies trained on SceneBloom layouts transfer to real scans with higher success rates than real-scan trained baselines."
     ],
-    "code": "def compile_scene(diffusion_proposal, assets): relations = extract_relations(diffusion_proposal); return optimize_poses(relations, assets)",
-    "fullAnalysis": "SceneBloom bridges the gap between text/image-guided generative models and physically compliant 3D simulation environments needed for embodied agent training. The framework operates in two main stages: a hierarchical diffusion sampler proposes spatial object arrangements within designated functional zones, and a contract-guided compiler translates these relational layout proposals into precise 3D object poses. By optimizing spatial contracts derived from visual priors, the compiler enforces physical validity without manual tweaking. Evaluation across five standard room types demonstrates that SceneBloom achieves superior visual realism and physical stability compared to existing baselines. Notably, it is the only framework evaluated that achieves complete elimination of object collisions and bounding errors. Furthermore, object navigation policies trained using SceneBloom generated scenes achieve higher success rates when evaluated on held-out physical scans than policies trained on equal amounts of real training environment data.",
+    "code": "def compile_3d_scene(diffusion_layout, spatial_contracts): relations = extract_spatial_relations(diffusion_layout); fitted_objects = geometric_fitting(relations, asset_db); return apply_local_pose_correction(fitted_objects, contracts=spatial_contracts)",
+    "fullAnalysis": "SceneBloom addresses a critical bottleneck in embodied AI training: generating synthetic 3D indoor scenes that maintain realistic visual priors while guaranteeing physical validity. Existing language-guided and visual generative frameworks often fail to enforce exact spatial grounding, leading to interpenetrating meshes or floating objects that degrade simulator stability. SceneBloom solves this by decoupling high-level spatial composition from low-level geometric enforcement. A hierarchical sampler utilizes diffusion priors to hypothesize furniture arrangements inside functional zones, extracting qualitative spatial relationships directly from generated visual proposals. These proposed layouts are then passed to a contract-guided 3D compiler. The compiler performs deterministic geometric fitting and local pose optimization to match extracted relational contracts against canonical 3D object repositories. Crucially, SceneBloom eliminates spatial anomalies entirely, achieving zero mesh collisions or out-of-bounds objects across tested room categories. The downstream effectiveness is demonstrated by training object navigation policies in SceneBloom-generated environments; these policies yield superior zero-shot success rates on physical real-world scans compared to baseline policies trained on actual real-scan datasets.",
     "metric": {
-      "label": "Mesh Collision Rate",
+      "label": "Mesh Collision and OOB Rate",
       "val": "0%"
     },
     "repo": {
@@ -26,25 +26,21 @@
   {
     "id": "d7b43246944ff47ed8a827d767aa4385",
     "source": "ARXIV",
-    "title": "RobustRLlib: Unified Library and Benchmark for Robust Reinforcement Learning",
-    "category": "models",
+    "title": "RobustRLlib: Standardized Library and Benchmark for Robust Reinforcement Learning",
+    "category": "infra",
     "depth": "L2 DEEP DIVE",
-    "tldr": "RobustRLlib is an algorithm-centric library and benchmark unifying 17 robust online, offline, and safe reinforcement learning algorithms under a standardized interface. It provides an extensive evaluation platform across 273 perturbation configurations to pinpoint current robustness gaps in real-world deployment scenarios. The benchmark covers advanced evaluation domains including humanoid control and vision-language-action tasks.",
+    "tldr": "RobustRLlib provides a unified, open-source framework consolidating 17 online, offline, and safe robust reinforcement learning algorithms under a standardized interface. The platform benchmarks policy resilience across 273 perturbation configurations, providing an empirical boundary map for complex humanoid control and vision-language-action tasks.",
     "takeaways": [
-      "Integrates 17 robust online, offline, and safe RL algorithms under a unified, reusable interface.",
-      "Evaluates algorithmic resilience across 273 systematic perturbation configurations.",
-      "Spans advanced control tasks including humanoid locomotion and vision-language-action (VLA) environments."
+      "Consolidates 17 representative online, offline, and safe robust RL algorithms under a unified API interface to maximize code reusability.",
+      "Establishes an empirical baseline by evaluating algorithms across 273 distinct perturbation configurations to map robustness boundaries.",
+      "Extends robust RL evaluations beyond standard control benchmarks to advanced humanoid robotics and vision-language-action (VLA) tasks."
     ],
-    "code": "import robust_rllib\\n\\n# Initialize a robust RL trainer with unified perturbation specs\\ntrainer = robust_rllib.make_trainer(\\n    algorithm=\"RobustPPO\",\\n    env_id=\"HumanoidVLA-v1\",\\n    perturbation_config={\"type\": \"action_noise\", \"severity\": 0.2}\\n)\\ntrainer.train(total_timesteps=1000000)",
-    "fullAnalysis": "RobustRLlib addresses major hurdles in robust reinforcement learning by standardizing algorithm implementations and empirical evaluation. Prior efforts suffered from fragmentation across disparate codebases and inconsistent evaluation protocols, making fair comparison difficult. By providing a unified interface across 17 distinct robust online, offline, and safe RL algorithms, the library drastically improves code reusability and accelerates development cycles for AI researchers.\\n\\nThe library introduces a comprehensive benchmark platform encompassing 273 perturbation configurations spanning sensor noise, environmental shifts, dynamic variations, and adversarial attacks. Systematic testing on complex environments, such as humanoid robotics and vision-language-action agents, provides crucial insight into where contemporary robust RL approaches succeed and where significant performance degradation still occurs.",
+    "code": "import robustrllib as rrl\n\nenv = rrl.make('Humanoid-Robust-v0', perturbation_type='mass_shift')\nalgo = rrl.algorithms.RobustPPO(env=env, robustness_bound=0.15)\nalgo.train(total_timesteps=1_000_000)\nresults = algo.evaluate(perturbation_configs=273)",
+    "fullAnalysis": "RobustRLlib addresses core bottlenecks in robust reinforcement learning by mitigating limited algorithm reusability and establishing empirical capability boundaries. By refactoring 17 representative online, offline, and safe RL algorithms into a cohesive API, the framework enables developers to easily compare algorithmic resilience against environmental shifts, observational noise, and distribution shifts. The benchmark suite provides standardized task environments ranging from high-dimensional continuous control to multimodal vision-language-action (VLA) domains.\\n\\nThe library's evaluation engine tests models across 273 systematic perturbation configurations to highlight performance degradation under adverse real-world conditions. This comprehensive capability mapping exposes key vulnerabilities in existing robust RL methods, providing developers with a reproducible platform to extend existing algorithms and design novel, resilient architectures for deployment in unconstrained physical environments.",
     "metric": {
-      "label": "Perturbation Configurations",
+      "label": "Evaluated Perturbation Configs",
       "val": "273"
     },
-    "repo": {
-      "name": "RobustRLlib",
-      "url": "https://github.com/RobustRLlib/RobustRLlib",
-      "stars": "1.5k"
-    }
+    "repo": null
   }
 ]
