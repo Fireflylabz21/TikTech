@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="slate_950">#020617</color>
+    <string name="app_name">DeepIndex AI</string>
+    <style name="Theme.TikTech" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/slate_950</item>
+    </style>
+</resources>

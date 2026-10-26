@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.TikTech" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/slate_950</item>
+    </style>
+    <color name="slate_950">#020617</color>
+</resources>
