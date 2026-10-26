@@ -1,22 +1,26 @@
 [
   {
-    "id": "9d4170915ad7b4375a5140a89d10058a",
+    "id": "0fb4422291c1b4f063d6a720463f7a9f",
     "source": "ARXIV",
-    "title": "Phase Transition from Random Features to Fully Trainable Networks",
+    "title": "LGMT: Metamorphic Testing Tool Exposes Up to 29.44% Logical Inconsistencies in LLMs",
     "category": "models",
-    "depth": "L3 MATH/KERNEL",
-    "tldr": "This paper quantifies a phase transition in neural network approximation bounds when transitioning from fixed random features to trainable parameters. The research reveals that training as few as 4.1% of parameters captures 90% of performance gains over fixed representations.",
+    "depth": "L2 DEEP DIVE",
+    "tldr": "LGMT is an open-source tool designed to evaluate the logical reasoning reliability of LLMs using metamorphic testing grounded in first-order logic. By generating logically equivalent variants of premise-conclusion pairs without needing ground-truth labels, LGMT checks for internal logical contradictions across model outputs. Empirical evaluation across six popular LLMs on 3,091 metamorphic groups revealed inconsistency rates between 20.84% and 29.44%.",
     "takeaways": [
-      "Establishes a squared L2 approximation rate of O((k_P log(m/delta)/m)^alpha) for width-m networks with trainable proportion P.",
-      "Proves that in 5D biased-ReLU networks, a 4.1% trainable parameter proportion achieves 90% of total theoretical error reduction.",
-      "Demonstrates empirical phase transitions in training error across multi-layer models up to 15 layers deep."
+      "Utilizes 20 built-in metamorphic relations grounded in first-order logic and supports custom relations verified via the Z3 theorem prover.",
+      "Evaluates LLM logical entailment predictions without requiring ground-truth labels by checking consistency across transformed follow-up test cases.",
+      "Revealed high logical inconsistency rates (20.84% to 29.44%) across six leading LLMs evaluated on 3,091 metamorphic test groups."
     ],
-    "code": "import torch\nimport torch.nn as nn\n\nclass PartiallyTrainableLinear(nn.Module):\n    def __init__(self, in_features, out_features, trainable_ratio=0.041):\n        super().__init__()\n        n_train = int(out_features * trainable_ratio)\n        self.trainable = nn.Linear(in_features, n_train)\n        self.fixed = nn.Linear(in_features, out_features - n_train)\n        self.fixed.weight.requires_grad = False\n        self.fixed.bias.requires_grad = False\n\n    def forward(self, x):\n        return torch.cat([self.trainable(x), self.fixed(x)], dim=-1)",
-    "fullAnalysis": "The authors analyze partially trainable neural networks bridging fixed random feature methods and fully adaptive models. Using leverage compatibility and polynomial spectral decay with exponent alpha > 1, they formalize an L2 approximation rate in a Reproducing Kernel Hilbert Space (RKHS). The derived bound shows that parameter efficiency exhibits diminishing returns after an initial sharp improvement, governed by fixed and trainable sampling mismatch constants k_0* and k_1*.\n\nThis framework provides strong theoretical backing for Parameter-Efficient Fine-Tuning (PEFT) and frozen-backbone architectures. For instance, in spherical biased-ReLU features at dimension d=5 and initialization scale tau=10, a trainable parameter ratio of only ~4.1% recovers 90% of the theoretical approximation gain of a 100% trainable model. Numerical experiments across architectures up to 15 layers confirm that this theoretical phase transition translates directly into actual gradient descent training dynamics.",
+    "code": "# Pseudocode illustration of LGMT execution flow\nfrom lgmt import MetamorphicTester, Z3Verifier\n\ntester = MetamorphicTester(model_id=\"gpt-4o\", offline_mode=False)\nrelation = tester.load_relation(\"contraposition\")\nassert Z3Verifier.verify(relation.logic_formula)\n\nsource_case = {\"premise\": \"If P then Q. P is True.\", \"conclusion\": \"Q is True.\"}\nfollowup_case = relation.transform(source_case)\n\ninconsistent = tester.check_consistency(source_case, followup_case)",
+    "fullAnalysis": "Large Language Models are increasingly integrated into modern software systems as reasoning components, yet static benchmarks evaluate queries in isolation and fail to expose internal contradictions. LGMT addresses this limitation by introducing metamorphic testing grounded in first-order logic for LLMs. Given a source test case in premise-conclusion form, LGMT generates logically equivalent follow-up test cases and checks whether the model's entailment predictions remain consistent across the pair, operating completely without ground-truth labels.\\n\\nThe framework features 20 built-in metamorphic relations, supports user-defined custom relations verified by the Z3 theorem prover, and includes CLI, web studio, and offline mock execution modes. Across six widely used LLMs evaluated on a bundled benchmark of 3,091 metamorphic groups, LGMT uncovered logical inconsistency rates ranging from 20.84% to 29.44%, highlighting significant reliability risks when deploying LLMs for logical reasoning tasks.",
     "metric": {
-      "label": "Trainable Ratio for 90% Bound Reduction",
-      "val": "4.1%"
+      "label": "Logical Inconsistency Rate",
+      "val": "20.84% - 29.44%"
     },
-    "repo": null
+    "repo": {
+      "name": "MaxwelsDonc/lgmt-tool",
+      "url": "https://github.com/MaxwelsDonc/lgmt-tool",
+      "stars": "1.5k"
+    }
   }
 ]
