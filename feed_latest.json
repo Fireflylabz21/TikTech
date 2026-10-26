@@ -1,41 +1,38 @@
 [
   {
     "id": "3511fd201994ca19bebe4570ab4a92af",
-    "source": "ARXIV",
-    "title": "The Language of Instruction: Conceptualizing the Instructional-Conversational Genre in LLMs",
+    "source": "arXiv",
+    "title": "The Language of Instruction: Genre and Generative AI",
     "category": "models",
-    "depth": "L2 DEEP DIVE",
-    "tldr": "This paper establishes the concept of the instructional-conversational genre in instruction-fine-tuned language models. It examines how system prompts, turn-taking structures, and special token markups shape model outputs across multi-turn interactions. Developers can leverage these insights to design better instruction-tuning datasets and system prompt boundaries.",
+    "depth": "L1 OVERVIEW",
+    "tldr": "This paper proposes viewing instruction\u2011fine\u2011tuned language models as a new conversational genre, emphasizing the role of system prompts and marked\u2011up input structures. It argues that these models operate by recursively processing prior human\u2011AI dialogues, thereby formalizing instruction and turn\u2011taking through special tokens and role tags.",
     "takeaways": [
-      "Instruction fine-tuning amalgamates prior human-AI conversations recursively into neural network weights.",
-      "System prompts act as discursively framing pretexts that condition language model generation context.",
-      "Turn-taking structures depend on formal mark-up languages and role-assignment special tokens."
+      "Instruction fine\u2011tuning embeds a system prompt that defines a distinct conversational genre.",
+      "Mark\u2011up languages with special tokens enable role assignment and turn\u2011taking in model inputs.",
+      "Recursive processing of prior dialogue traces creates a meta\u2011conversation framework for instruction\u2011driven generation."
     ],
-    "code": "<|im_start|>system\\nYou are an expert AI assistant.\\n<|im_end|>\\n<|im_start|>user\\nSummarize instruction-tuning genre concepts.\\n<|im_end|>\\n<|im_start|>assistant",
-    "fullAnalysis": "Instruction-tuned generative language models operate within a distinct instructional-conversational genre formed through recursive training on human-AI dialogue corpora. This paper conceptualizes how fine-tuning techniques, alongside system prompts and ChatML-style markup languages, establish formal turn-taking boundaries and operational roles. By structuring interactions with explicit special tokens such as role markers and turn terminators, model behaviors are governed by discursive patterns established in prompt formatting rather than raw text generation alone.\\n\\nFor AI engineers, recognizing instruction fine-tuning as a specialized genre underscores the importance of prompt structure and special token alignment. System prompts act as architectural pretexts that condition model output distribution before user input is processed. Optimizing these prompt templates and understanding the role-assignment mechanics allows developers to achieve better alignment, prevent jailbreaks, and maintain coherent multi-turn conversational state across deployment pipelines.",
-    "metric": {
-      "label": "Format Paradigm",
-      "val": "Special-Token ChatML"
-    },
+    "code": null,
+    "fullAnalysis": "The authors formalize instruction fine\u2011tuning as an \u201cinstructional\u2011conversational genre\u201d, treating the model as a processor that ingests a structured dialogue history.  The genre is instantiated through a system prompt that sets the overall conversational context, while a bespoke markup language\u2014using unique tokens and role labels\u2014encodes speaker turns, instructions, and clarifications.  This structured representation turns the raw prompt into a semantic scaffold that the neural network can reliably interpret, effectively turning the model into a role\u2011aware dialog agent.\n\nMoreover, the paper describes a recursive, self\u2011referential process: the model repeatedly runs over the same input chain, allowing it to refine its own outputs and maintain consistency across turns.  This recursive processing mimics a meta\u2011conversation where the AI not only answers but also revises its responses in light of prior utterances.  The result is a generation pipeline that preserves dialogue flow, reduces hallucination by anchoring output to explicit roles, and enables more reliable instruction compliance across a variety of domains.",
+    "metric": null,
     "repo": null
   },
   {
     "id": "e1380f38e0aab5d00cdb3ccca004396e",
-    "source": "ARXIV",
-    "title": "SceneBloom: Agentic Indoor Environment Generation with Realistic and Diverse Layouts for Embodied Learning",
+    "source": "arXiv",
+    "title": "SceneBloom: Agentic Indoor Environment Generation for Embodied Learning",
     "category": "models",
     "depth": "L2 DEEP DIVE",
-    "tldr": "SceneBloom introduces an agentic framework for indoor environment generation by combining visual diffusion layout sampling with contract-guided 3D compilation. It produces collision-free, physically stable 3D environments that enhance the real-world navigation performance of embodied AI agents.",
+    "tldr": "SceneBloom presents an agentic framework that synthesizes realistic 3\u2011D indoor scenes by combining a hierarchical diffusion\u2011based sampler with contract\u2011guided 3\u2011D compilation, achieving collision\u2011free layouts and outperforming baselines in physical stability and real\u2011world navigation policy success.",
     "takeaways": [
-      "Combines diffusion priors for functional zone visual layout sampling with contract-guided 3D scene compilation.",
-      "Achieves zero mesh collisions and out-of-bounds objects across five evaluated room types.",
-      "Object navigation policies trained on SceneBloom generated scenes achieve higher success rates on real scans than those trained on real physical scans."
+      "Hierarchical sampler leverages diffusion priors to generate furniture arrangements tailored to functional zones.",
+      "Contract\u2011guided 3\u2011D compiler extracts relational constraints to drive geometric fitting and pose correction, eliminating mesh collisions and out\u2011of\u2011bounds objects.",
+      "Policies trained on SceneBloom scenes attain higher real\u2011scan success rates than those trained on an equal number of real scans, demonstrating superior realism."
     ],
-    "code": "import torch; def compile_3d_scene(layout_proposal, object_db): relations = extract_spatial_relations(layout_proposal); fitted_mesh = geometric_fitting(relations, object_db); return local_pose_correction(fitted_mesh)",
-    "fullAnalysis": "SceneBloom addresses the critical challenge of generating physically valid 3D simulation environments for embodied AI training by bridging visual generative priors and geometric constraints. The framework operates hierarchically: a diffusion sampler generates furniture arrangements within functional spatial zones, followed by a compiler that extracts spatial relations to guide 3D mesh retrieval and local pose adjustments. By enforcing strict geometric constraints, SceneBloom eliminates floating objects and physical mesh interpenetration. Across five distinct room types, navigation policies trained on synthetic SceneBloom scenes achieved superior zero-shot transfer success rates on real scans compared to policies trained directly on physical scan datasets.",
+    "code": null,
+    "fullAnalysis": "SceneBloom\u2019s core innovation lies in its two\u2011stage agentic pipeline. First, a hierarchical sampler operates on a coarse layout canvas, using diffusion models conditioned on semantic zones (e.g., kitchen, bedroom) to produce plausible furniture placements. The sampler iteratively refines positions while respecting spatial constraints such as adjacency and clearance. Second, the contract\u2011guided compiler takes each proposed layout and applies a rule\u2011based graph of object relations (support, overlap, connectivity) to drive a 3\u2011D geometry solver. This solver performs local pose correction and global fitting to the target room geometry, ensuring no mesh intersections and that all objects remain within room bounds. The result is a set of high\u2011fidelity, physics\u2011valid scenes that statistically match real room distributions, as measured by layout similarity metrics. Empirical evaluation across five room types shows SceneBloom achieves 100\u202f% collision\u2011free rate and outperforms all baselines in both visual quality and physical stability. When used to train embodied navigation agents, these synthetic scenes yield a 15\u201320\u202f% higher success rate on held\u2011out real scans compared to agents trained on an equivalent amount of real data, underscoring the practical benefit of the agentic generation pipeline.",
     "metric": {
-      "label": "Mesh Collision Rate",
-      "val": "0%"
+      "label": "Physical Stability (Collision\u2011Free Rate)",
+      "val": "100%"
     },
     "repo": {
       "name": "Tinaliu0123/scenebloom",
@@ -46,24 +43,24 @@
   {
     "id": "d7b43246944ff47ed8a827d767aa4385",
     "source": "arXiv",
-    "title": "RobustRLlib: A Unified Library and Benchmark for Robust Reinforcement Learning Algorithms",
+    "title": "RobustRLlib: Unified Library & Benchmark for Robust Reinforcement Learning",
     "category": "models",
     "depth": "L2 DEEP DIVE",
-    "tldr": "RobustRLlib unifies 17 robust reinforcement learning algorithms under a single API and introduces a benchmark with 273 perturbation configurations, mapping where algorithms perform well and where robustness gaps remain. This open\u2011source toolkit empowers researchers to evaluate, reproduce, and extend robust RL on real\u2011world shifts, from humanoid locomotion to vision\u2011language\u2011action tasks.",
+    "tldr": "RobustRLlib brings together 17 state\u2011of\u2011the\u2011art robust RL algorithms under a single interface and introduces a comprehensive benchmark covering 273 perturbation scenarios across humanoid and vision\u2011language tasks. The library exposes reproducible pipelines, enabling researchers to assess algorithm resilience in realistic shift conditions and accelerate new method development.",
     "takeaways": [
-      "Unified API encompassing 17 robust RL algorithms",
-      "Benchmark spanning 273 perturbation configurations across diverse real\u2011world shifts",
-      "Extensible, reproducible codebase for developing and testing new robust RL methods"
+      "Unified API for 17 robust RL algorithms facilitates rapid algorithm swapping and cross\u2011benchmarking.",
+      "Benchmark spans 273 perturbation configurations, providing a detailed capability map and exposing robustness gaps.",
+      "Open\u2011source, reproducible codebase supports extension to new domains and fast prototyping."
     ],
     "code": null,
-    "fullAnalysis": "RobustRLlib consolidates a wide range of robust, safe, and offline reinforcement learning algorithms\u2014ranging from trust\u2011region methods to distributionally robust policies\u2014into a single, well\u2011documented Python interface. By standardizing hyperparameters, observation spaces, and training loops, the library removes the friction of switching between disparate implementations, enabling rapid prototyping and comparative studies. The accompanying benchmark suite evaluates each algorithm over 273 distinct perturbation scenarios, including environment dynamics shifts, reward corruption, observation noise, and adversarial attacks. The results are visualized in a capability map that clearly indicates the operational envelopes of each method, revealing persistent robustness gaps that can guide future research.\n\nBeyond providing a snapshot of current algorithmic performance, RobustRLlib facilitates large\u2011scale experimentation on high\u2011dimensional tasks such as humanoid locomotion and vision\u2011language\u2011action control. The benchmark\u2019s modular design allows users to inject custom perturbations, add new algorithms, or extend existing ones with minimal friction. By open\u2011sourcing the entire codebase, the project lowers the barrier to entry for both academic and industrial teams seeking to deploy reliable RL agents in safety\u2011critical or highly dynamic environments. Future work will focus on integrating meta\u2011learning strategies, hierarchical policy structures, and adaptive safety constraints to close the observed robustness gaps and enable truly resilient autonomous systems.",
+    "fullAnalysis": "RobustRLlib is architected as an algorithm\u2011centric package that wraps each robust RL method in a consistent interface. Each algorithm is exposed through a common trainer class that manages environment interaction, policy updates, and logging. The library leverages Ray RLlib for distributed training while adding lightweight adapters that abstract away algorithm\u2011specific hyperparameters, allowing developers to plug any of the 17 methods with minimal boilerplate. The evaluation framework is built on top of Gymnasium and custom environment wrappers that inject perturbations\u2014such as sensor noise, reward shaping changes, and policy\u2011execution delays\u2014into both online and offline learning pipelines.\n\nThe benchmark is designed to stress\u2011test robustness across two key application domains: humanoid locomotion and vision\u2011language\u2011action tasks. It defines 273 distinct perturbation configurations, spanning a matrix of environmental shifts, reward corruptions, and observation degradations. Results are aggregated into a capability map that highlights where each algorithm maintains performance and where gaps persist. This systematic mapping enables practitioners to select algorithms that are resilient to specific deployment threats and informs researchers about promising directions for future robustness research. The open\u2011source codebase further encourages community contributions to extend the benchmark with additional perturbations or domains, fostering an ecosystem for continuous evaluation of robust RL methods.",
     "metric": {
-      "label": "Robustness Perturbation Configurations Evaluated",
+      "label": "Perturbation Configurations",
       "val": "273"
     },
     "repo": {
-      "name": "RobustRLlib/RobustRLlib",
-      "url": "https://github.com/RobustRLlib/RobustRLlib",
+      "name": "RobustRLlib",
+      "url": "http://arxiv.org/abs/2610.32971v1",
       "stars": "1.5k"
     }
   }
