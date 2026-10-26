@@ -9,7 +9,7 @@ jobs:
   ingest:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Allow GitHub Actions to commit files
+      contents: write  # Allow GitHub Actions to commit feed_latest.json back to repository
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -25,10 +25,10 @@ jobs:
 
       - name: Run Ingestion Pipeline
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || vars.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || vars.GROQ_API_KEY }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN || vars.HF_TOKEN }}
+          NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL || vars.NEON_DATABASE_URL }}
         run: |
           python autonomous_ingestion_pipeline_agent.py
 
