@@ -2,8 +2,8 @@
 TikTech - Autonomous Technical News Ingestion & Summarization Pipeline
 Zero-Dollar Architecture Implementation:
 - Ingests arXiv, RSS Feeds, GitHub Releases
-- Summarizes using Google Gemini API with automatic model fallbacks,
-  falling back to Groq API (with automatic Llama model fallbacks) if Gemini fails.
+- Summarizes using Google Gemini API (Standard v1 endpoint with x-goog-api-key header & whitespace stripping),
+  falling back to Groq API (Llama models) if Gemini fails.
 - Generates 384-dim dense vectors via HuggingFace Free Inference API
 - Stores output into Neon Serverless Postgres (pgvector) & cloud JSON static feeds
 """
@@ -69,13 +69,16 @@ def fetch_arxiv_papers(query="cat:cs.AI OR cat:cs.CL OR cat:cs.LG", max_results=
     return papers
 
 # ============================================================================
-# 3. LLM Pipeline Integration (Gemini + Groq with Model Fallbacks)
+# 3. LLM Pipeline Integration (Gemini v1/v1beta + Groq Fallbacks)
 # ============================================================================
 def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: Optional[str] = None) -> Optional[TechnicalArticleAnalysis]:
     """
-    Sends raw paper/article text to Gemini with automatic model fallbacks.
+    Sends raw paper/article text to Gemini (v1 & v1beta endpoints, x-goog-api-key header, whitespace sanitized).
     If all Gemini models fail, falls back to Groq API with automatic model fallbacks.
     """
+    if gemini_api_key:
+        gemini_api_key = gemini_api_key.strip()
+
     prompt = f"""
     You are an expert AI Lead Architect. Analyze the following technical document and extract structured insights for a developer news app.
     Focus strictly on code, hardware benchmarks, real-world case studies, and security vulnerabilities.
@@ -88,7 +91,7 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
     """
 
     # ------------------------------------------------------------------------
-    # 3.1 Try Gemini Models First
+    # 3.1 Try Gemini Models (v1 and v1beta endpoints with x-goog-api-key header)
     # ------------------------------------------------------------------------
     gemini_models = [
         "gemini-3.8-flash",
@@ -106,23 +109,35 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
         }
     }
 
-    for model_name in gemini_models:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_api_key}"
-        try:
-            res = requests.post(url, json=payload, headers={'Content-Type': 'application/json'}, timeout=15)
-            if res.status_code == 200:
-                data = res.json()
-                raw_json = data['candidates'][0]['content']['parts'][0]['text']
-                print(f"      ✔ Successfully parsed via Gemini ({model_name})")
-                return TechnicalArticleAnalysis.model_validate_json(raw_json)
-            elif res.status_code == 404:
-                continue
-            else:
-                print(f"[-] Gemini API Error ({model_name}) [{res.status_code}]: {res.text}")
-        except Exception as e:
-            continue
+    headers = {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': gemini_api_key
+    }
 
-    print("[-] All Gemini models failed. Falling back to Groq API...")
+    for model_name in gemini_models:
+        # Try standard v1 endpoint first, then v1beta
+        endpoints = [
+            f"https://generativelanguage.googleapis.com/v1/models/{model_name}:generateContent",
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+        ]
+
+        for endpoint in endpoints:
+            try:
+                res = requests.post(endpoint, json=payload, headers=headers, timeout=15)
+                if res.status_code == 200:
+                    data = res.json()
+                    raw_json = data['candidates'][0]['content']['parts'][0]['text']
+                    print(f"      ✔ Successfully parsed via Gemini ({model_name})")
+                    return TechnicalArticleAnalysis.model_validate_json(raw_json)
+                elif res.status_code == 404:
+                    continue
+                else:
+                    # Print warning for non-404 errors but continue trying other models/endpoints
+                    print(f"[-] Gemini API Error ({model_name}) [{res.status_code}]: {res.text}")
+            except Exception as e:
+                continue
+
+    print("[-] All Gemini models and endpoints failed. Falling back to Groq API...")
 
     # ------------------------------------------------------------------------
     # 3.2 Fallback to Groq API with Model Fallback List
@@ -133,6 +148,8 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
     if not groq_api_key:
         print("[!] Groq API key not provided. Fallback failed.")
         return None
+
+    groq_api_key = groq_api_key.strip()
 
     groq_models = [
         "meta-llama/llama-4-scout-17b-16e-instruct",
@@ -188,6 +205,8 @@ def analyze_article_with_llm(raw_text: str, gemini_api_key: str, groq_api_key: O
 # ============================================================================
 def generate_bge_embedding(text: str, hf_token: str) -> List[float]:
     """Generates 384-dimensional dense vectors using HuggingFace BGE Small model."""
+    if hf_token:
+        hf_token = hf_token.strip()
     url = "https://api-inference.huggingface.co/pipeline/feature-extraction/BAAI/bge-small-en-v1.5"
     headers = {"Authorization": f"Bearer {hf_token}"}
     
@@ -211,6 +230,8 @@ def save_to_neon_db(article_payload: dict, embedding: list):
     if not db_url:
         print("[!] NEON_DATABASE_URL not set. Skipping DB upsert.")
         return
+
+    db_url = db_url.strip()
 
     try:
         conn = psycopg2.connect(db_url)
