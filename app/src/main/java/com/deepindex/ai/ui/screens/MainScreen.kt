@@ -179,6 +179,74 @@ fun MainScreen(viewModel: NewsViewModel) {
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                if (selectedCategory == "business" && searchQuery.isBlank()) {
+                    item {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .shadow(6.dp, RoundedCornerShape(20.dp))
+                                .border(2.dp, Slate950, RoundedCornerShape(20.dp)),
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(
+                                        Brush.linearGradient(
+                                            colors = listOf(Color(0xFF0F172A), Color(0xFF1E293B))
+                                        )
+                                    )
+                                    .padding(20.dp)
+                            ) {
+                                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "💡 FINANCIAL & CAPITAL HUB TIPS",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = BrandYellow
+                                        )
+                                        Text(
+                                            text = "DEV ROI",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = BrandCyan
+                                        )
+                                    }
+                                    Text(
+                                        text = "• GPU Cloud Arbitrage: Leverage spot instances & reserved multi-node clusters to cut training inference costs by 65%.",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        lineHeight = 18.sp
+                                    )
+                                    Text(
+                                        text = "• Vector Cache Economics: Aggressively cache query embeddings to eliminate redundant LLM API gateway token burn.",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate100,
+                                        lineHeight = 18.sp
+                                    )
+                                    Text(
+                                        text = "• Token-Tiered Pricing: Structure developer API monetization tiers around context windows and GPU memory footprints.",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate100,
+                                        lineHeight = 18.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if (selectedCategory == "home" && searchQuery.isBlank()) {
                     // Hero Briefing Card
                     item {
