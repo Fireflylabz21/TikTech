@@ -4,7 +4,7 @@ Architecture Specification:
 - Agent 1: Ingestion & Normalization Agent (ArXiv, GitHub, RSS, HF Hub)
 - Agent 2: Deduplication & Semantic Clustering Agent (DBSCAN + Time-decay cosine similarity)
 - Agent 3: NER & Knowledge Graph Triplet Extractor Agent (Extracts Models, Chips, Datasets, Companies)
-- Agent 4: Multi-Perspective Synthesizer Agent (Gemini/Groq structured extraction across 7 taxonomy pillars)
+- Agent 4: Multi-Perspective Synthesizer Agent (Gemini / DeepSeek / Groq structured extraction across 7 taxonomy pillars)
 - Stores output into Neon Serverless Postgres (pgvector + Knowledge Graph) & cloud JSON static feeds
 """
 
@@ -19,6 +19,24 @@ from psycopg2.extras import Json
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from pydantic import BaseModel, Field
+
+# ============================================================================
+# API Key Rotator Utility
+# ============================================================================
+class KeyRotator:
+    def __init__(self, keys: List[str]):
+        self.keys = [k.strip() for k in keys if k and k != "DEMO_KEY"]
+        self.index = 0
+
+    def get_current(self) -> Optional[str]:
+        if not self.keys:
+            return None
+        return self.keys[self.index % len(self.keys)]
+
+    def rotate(self):
+        if self.keys:
+            self.index = (self.index + 1) % len(self.keys)
+            print(f"      [Rotator] Rotating API key to index {self.index}")
 
 # ============================================================================
 # Pydantic Models for Structured Multi-Agent Extraction
@@ -104,14 +122,11 @@ def agent_deduplicate_and_cluster(articles: List[dict]) -> List[dict]:
 # ============================================================================
 # AGENT 3 & 4: Multi-Perspective Synthesizer & NER Knowledge Graph Agent (LLM)
 # ============================================================================
-def agent_synthesize_and_extract_kg(raw_text: str, gemini_api_key: str, groq_api_key: Optional[str] = None) -> Optional[TechnicalArticleAnalysis]:
+def agent_synthesize_and_extract_kg(raw_text: str, gemini_rotator: KeyRotator, deepseek_key: Optional[str] = None, groq_api_key: Optional[str] = None) -> Optional[TechnicalArticleAnalysis]:
     """
-    Agent 3 & 4: Uses Gemini with automatic fallback to Groq to extract structured 7-pillar taxonomy,
-    code snippets, benchmarks, NER entity tags, and knowledge graph triplets.
+    Agent 3 & 4: Uses Gemini with automatic key rotation and fallbacks (DeepSeek -> Groq)
+    to extract structured 7-pillar taxonomy, code snippets, benchmarks, NER entity tags, and knowledge graph triplets.
     """
-    if gemini_api_key:
-        gemini_api_key = gemini_api_key.strip()
-
     prompt = f"""
     You are an expert AI Lead Architect and Knowledge Graph Extractor. Analyze the following technical document and extract structured insights for TikTech.
     Focus strictly on code, hardware benchmarks, real-world case studies, and security vulnerabilities.
@@ -131,7 +146,6 @@ def agent_synthesize_and_extract_kg(raw_text: str, gemini_api_key: str, groq_api
     {raw_text[:4000]}
     """
 
-    # 3.1 Try Gemini Models
     gemini_models = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-2.5-flash", "gemini-1.5-flash"]
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -140,26 +154,60 @@ def agent_synthesize_and_extract_kg(raw_text: str, gemini_api_key: str, groq_api
             "response_schema": TechnicalArticleAnalysis.model_json_schema()
         }
     }
-    headers = {'Content-Type': 'application/json', 'x-goog-api-key': gemini_api_key}
 
-    for model_name in gemini_models:
-        for endpoint in [
-            f"https://generativelanguage.googleapis.com/v1/models/{model_name}:generateContent",
-            f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
-        ]:
+    # 3.1 Try Gemini with Key Rotation across models and keys
+    for _ in range(len(gemini_rotator.keys) * len(gemini_models)):
+        current_key = gemini_rotator.get_current()
+        if not current_key:
+            break
+        headers = {'Content-Type': 'application/json', 'x-goog-api-key': current_key}
+
+        for model_name in gemini_models:
+            for endpoint in [
+                f"https://generativelanguage.googleapis.com/v1/models/{model_name}:generateContent",
+                f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+            ]:
+                try:
+                    res = requests.post(endpoint, json=payload, headers=headers, timeout=15)
+                    if res.status_code == 200:
+                        data = res.json()
+                        raw_json = data['candidates'][0]['content']['parts'][0]['text']
+                        print(f"      ✔ [Agent 4] Synthesized via Gemini ({model_name}) [Key Index {gemini_rotator.index}]")
+                        return TechnicalArticleAnalysis.model_validate_json(raw_json)
+                    elif res.status_code in [429, 401, 403, 500, 503]:
+                        print(f"      [!] Gemini HTTP {res.status_code} with key index {gemini_rotator.index}. Rotating key...")
+                        gemini_rotator.rotate()
+                        break
+                    elif res.status_code == 404:
+                        continue
+                except Exception:
+                    continue
+
+    # 3.2 Fallback to DeepSeek API
+    if deepseek_key and deepseek_key != "DEMO_KEY":
+        deepseek_url = "https://api.deepseek.com/chat/completions"
+        deepseek_headers = {"Authorization": f"Bearer {deepseek_key.strip()}", "Content-Type": "application/json"}
+        deepseek_models = ["deepseek-chat", "deepseek-coder"]
+        for ds_model in deepseek_models:
+            ds_payload = {
+                "model": ds_model,
+                "messages": [
+                    {"role": "system", "content": "You are an expert AI Lead Architect. Output valid JSON matching the schema strictly."},
+                    {"role": "user", "content": prompt + "\n\nSchema:\n" + json.dumps(TechnicalArticleAnalysis.model_json_schema(), indent=2)}
+                ],
+                "response_format": {"type": "json_object"}
+            }
             try:
-                res = requests.post(endpoint, json=payload, headers=headers, timeout=15)
+                res = requests.post(deepseek_url, json=ds_payload, headers=deepseek_headers, timeout=20)
                 if res.status_code == 200:
                     data = res.json()
-                    raw_json = data['candidates'][0]['content']['parts'][0]['text']
-                    print(f"      ✔ [Agent 4] Synthesized via Gemini ({model_name})")
+                    raw_json = data['choices'][0]['message']['content']
+                    print(f"      ✔ [Agent 4] Synthesized via DeepSeek ({ds_model})")
                     return TechnicalArticleAnalysis.model_validate_json(raw_json)
-                elif res.status_code == 404:
-                    continue
             except Exception:
                 continue
 
-    # 3.2 Fallback to Groq API (Llama 3.3 / Llama 4)
+    # 3.3 Fallback to Groq API (Llama 3.3 / Llama 4)
     if not groq_api_key or groq_api_key == "DEMO_KEY":
         groq_api_key = os.getenv("GROQ_API_KEY")
 
@@ -285,7 +333,14 @@ def run_pipeline():
     print("🚀 TikTech: Multi-Agent Ingestion Pipeline Running")
     print("=" * 60)
 
-    gemini_key = os.getenv("GEMINI_API_KEY", "DEMO_KEY")
+    gemini_keys = [
+        os.getenv("GEMINI_API_KEY", "DEMO_KEY"),
+        os.getenv("GEMINI_API_KEY_1", "DEMO_KEY"),
+        os.getenv("GEMINI_API_KEY_2", "DEMO_KEY")
+    ]
+    gemini_rotator = KeyRotator(gemini_keys)
+
+    deepseek_key = os.getenv("DEEPSEEK_API_KEY", "DEMO_KEY")
     groq_key = os.getenv("GROQ_API_KEY", "DEMO_KEY")
     hf_token = os.getenv("HF_TOKEN", "DEMO_TOKEN")
 
@@ -296,7 +351,7 @@ def run_pipeline():
 
     for idx, paper in enumerate(unique_papers, 1):
         print(f"\n[Processing Item {idx}/{len(unique_papers)}] {paper['title'][:50]}...")
-        analysis = agent_synthesize_and_extract_kg(paper['raw_text'], gemini_key, groq_key)
+        analysis = agent_synthesize_and_extract_kg(paper['raw_text'], gemini_rotator, deepseek_key, groq_key)
 
         if analysis:
             print(f"      ✔ Pillar: [{analysis.category.upper()}] | Depth: {analysis.depth_level}")
