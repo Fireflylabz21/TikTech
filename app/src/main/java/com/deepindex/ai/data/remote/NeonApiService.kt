@@ -49,7 +49,10 @@ data class ArticleDto(
     val metric: MetricDto?,
     val repo: RepoDto?,
     val entity_tags: List<String>?,
-    val published_at: String?
+    val published_at: String?,
+    val ai_tech_news_summary: String?,
+    val wow_moment: String?,
+    val aww_moment: String?
 ) {
     fun toEntity(): ArticleEntity {
         val gson = com.google.gson.Gson()
@@ -71,7 +74,10 @@ data class ArticleDto(
             metricValue = metric?.value,
             entityTagsJson = gson.toJson(entity_tags ?: emptyList<String>()),
             publishedAt = published_at ?: "2026-10-27",
-            isBookmarked = false
+            isBookmarked = false,
+            aiTechNewsSummary = ai_tech_news_summary,
+            wowMoment = wow_moment,
+            awwMoment = aww_moment
         )
     }
 }

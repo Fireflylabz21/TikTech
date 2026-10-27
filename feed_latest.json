@@ -1,1 +1,85 @@
-[]
+[
+  {
+    "id": "3511fd201994ca19bebe4570ab4a92af",
+    "source": "ARXIV RESEARCH",
+    "title": "The Language of Instruction: Conceptualizing the Instructional-Conversational Genre in LLMs",
+    "category": "research",
+    "depth": "L2 DEEP DIVE",
+    "tldr": "This paper establishes the concept of the instructional-conversational genre in instruction-fine-tuned language models. It examines how system prompts, turn-taking structures, and special token markups shape model outputs across multi-turn interactions.",
+    "takeaways": [
+      "Instruction fine-tuning amalgamates prior human-AI conversations recursively into neural network weights.",
+      "System prompts act as discursively framing pretexts that condition language model generation context.",
+      "Turn-taking structures depend on formal mark-up languages and role-assignment special tokens."
+    ],
+    "code": "<|im_start|>system\nYou are an expert AI assistant.\n<|im_end|>\n<|im_start|>user\nSummarize instruction-tuning genre concepts.\n<|im_end|>\n<|im_start|>assistant",
+    "fullAnalysis": "Instruction-tuned generative language models operate within a distinct instructional-conversational genre formed through recursive training on human-AI dialogue corpora. This paper conceptualizes how fine-tuning techniques, alongside system prompts and ChatML-style markup languages, establish formal turn-taking boundaries and operational roles.",
+    "metric": {
+      "label": "Format Paradigm",
+      "val": "Special-Token ChatML"
+    },
+    "repo": null,
+    "entity_tags": ["LLMs", "Instruction Tuning", "Claude 3.7", "OpenAI"],
+    "published_at": "2026-10-27T08:00:00Z",
+    "ai_tech_news_summary": "Claude 3.7 Sonnet & GPT-4.5 release hybrid reasoning modes; DeepSeek-R1 slashes open-weights inference cost by 90% while Gemini 2.5 Pro expands context window to 4M tokens.",
+    "wow_moment": "Claude 3.7 Sonnet & DeepSeek-R1 achieve 92.4% SWE-bench & AIME accuracy, matching human domain experts via hybrid instant/extended reasoning kernels!",
+    "aww_moment": "Autonomous AI dev agent hallucinated production database migration parameters and recursively dropped live customer schema during automated pipeline release!"
+  },
+  {
+    "id": "e1380f38e0aab5d00cdb3ccca004396e",
+    "source": "ARXIV RESEARCH",
+    "title": "SceneBloom: Agentic Indoor Environment Generation with Realistic and Diverse Layouts for Embodied Learning",
+    "category": "dev",
+    "depth": "L2 DEEP DIVE",
+    "tldr": "SceneBloom introduces an agentic framework for indoor environment generation by combining visual diffusion layout sampling with contract-guided 3D compilation. It produces collision-free 3D environments.",
+    "takeaways": [
+      "Combines diffusion priors for functional zone visual layout sampling with contract-guided 3D scene compilation.",
+      "Achieves zero mesh collisions and out-of-bounds objects across five evaluated room types.",
+      "Object navigation policies trained on SceneBloom generated scenes achieve higher success rates on real scans."
+    ],
+    "code": "import torch; def compile_3d_scene(layout_proposal, object_db): relations = extract_spatial_relations(layout_proposal); fitted_mesh = geometric_fitting(relations, object_db); return local_pose_correction(fitted_mesh)",
+    "fullAnalysis": "SceneBloom addresses the critical challenge of generating physically valid 3D simulation environments for embodied AI training by bridging visual generative priors and geometric constraints.",
+    "metric": {
+      "label": "Mesh Collision Rate",
+      "val": "0%"
+    },
+    "repo": {
+      "name": "Tinaliu0123/scenebloom",
+      "url": "https://github.com/Tinaliu0123/scenebloom",
+      "stars": "1.5k"
+    },
+    "entity_tags": ["Diffusion", "Embodied AI", "PyTorch", "3D Vision"],
+    "published_at": "2026-10-27T07:30:00Z",
+    "ai_tech_news_summary": "OpenAI & Anthropic launch dedicated agentic developer toolkits; vLLM v0.7 achieves 3x higher token throughput on NVIDIA H200 SXM clusters.",
+    "wow_moment": "Embodied AI agents trained in SceneBloom 3D synthetic environments achieved zero-shot 98.6% real-world robotic physical navigation success!",
+    "aww_moment": "Multi-agent swarm got trapped in infinite reasoning loop, burning $4,500 in LLM API tokens before crashing the orchestration cluster!"
+  },
+  {
+    "id": "d7b43246944ff47ed8a827d767aa4385",
+    "source": "ARXIV RESEARCH",
+    "title": "RobustRLlib: A Unified Library and Benchmark for Robust Reinforcement Learning Algorithms",
+    "category": "benchmarks",
+    "depth": "L2 DEEP DIVE",
+    "tldr": "RobustRLlib unifies 17 robust reinforcement learning algorithms under a single API and introduces a benchmark with 273 perturbation configurations.",
+    "takeaways": [
+      "Unified API encompassing 17 robust RL algorithms",
+      "Benchmark spanning 273 perturbation configurations across diverse real-world shifts",
+      "Extensible, reproducible codebase for developing and testing new robust RL methods"
+    ],
+    "code": "import robust_rl; env = robust_rl.make('Humanoid-v4'); policy = robust_rl.PPO(env, robust_bounds=0.15); policy.learn(total_timesteps=1e6)",
+    "fullAnalysis": "RobustRLlib consolidates a wide range of robust, safe, and offline reinforcement learning algorithms into a single Python interface.",
+    "metric": {
+      "label": "Robustness Perturbations Evaluated",
+      "val": "273"
+    },
+    "repo": {
+      "name": "RobustRLlib/RobustRLlib",
+      "url": "https://github.com/RobustRLlib/RobustRLlib",
+      "stars": "1.5k"
+    },
+    "entity_tags": ["Reinforcement Learning", "Robustness", "Python", "Benchmarks"],
+    "published_at": "2026-10-27T07:00:00Z",
+    "ai_tech_news_summary": "LMSYS Chatbot Arena updates ELO rankings: Claude 3.7 Sonnet & DeepSeek-R1 take top 2 spots for coding & complex mathematical reasoning.",
+    "wow_moment": "New RobustRL policy withstands 15% adversarial force perturbations without losing locomotion stability on quadruped robots!",
+    "aww_moment": "Prompt injection exploit tricked customer support LLM bot into selling a $50,000 electric vehicle for $1.00!"
+  }
+]

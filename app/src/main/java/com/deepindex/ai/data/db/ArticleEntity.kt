@@ -23,5 +23,8 @@ data class ArticleEntity(
     val metricValue: String?,
     val entityTagsJson: String? = "[]",
     val publishedAt: String,
-    var isBookmarked: Boolean = false
+    var isBookmarked: Boolean = false,
+    val aiTechNewsSummary: String? = null,
+    val wowMoment: String? = null,
+    val awwMoment: String? = null
 )

@@ -55,6 +55,11 @@ CREATE TABLE IF NOT EXISTS articles (
     metric_value VARCHAR(50),                     -- e.g., "88.5%"
     entity_tags JSONB NOT NULL DEFAULT '[]'::jsonb, -- e.g., ["Llama-3.3-70B", "NVIDIA H100"]
 
+    -- AI Tech News & Wow / Aww Moments
+    ai_tech_news_summary TEXT,
+    wow_moment TEXT,
+    aww_moment TEXT,
+
     -- Timestamps
     published_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

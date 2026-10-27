@@ -49,7 +49,7 @@ class EntityTriplet(BaseModel):
 
 class TechnicalArticleAnalysis(BaseModel):
     title: str = Field(description="Clear, high-impact headline for developers")
-    source_name: str = Field(description="Name of source e.g. ARXIV, GITHUB, DEEPSEEK LABS")
+    source_name: str = Field(description="Name of source e.g. ARXIV, GITHUB, DEEPSEEK LABS, OPENAI, ANTHROPIC")
     category: str = Field(description="Must be one of the 7 taxonomy pillars: 'research', 'dev', 'silicon', 'enterprise', 'policy', 'business', 'benchmarks'")
     depth_level: str = Field(description="Must be one of: 'L1 OVERVIEW', 'L2 DEEP DIVE', 'L3 MATH/KERNEL'")
     tldr: str = Field(description="2-3 sentence executive summary highlighting technical impact")
@@ -61,6 +61,9 @@ class TechnicalArticleAnalysis(BaseModel):
     github_repo_name: Optional[str] = Field(description="Extracted GitHub repository name if mentioned e.g. 'vllm-project/vllm'")
     github_repo_url: Optional[str] = Field(description="Extracted GitHub URL if available")
     entity_tags: List[str] = Field(description="Extracted key technical entities e.g. ['Llama-3.3-70B', 'NVIDIA H100']")
+    ai_tech_news_summary: Optional[str] = Field(description="Summary of latest news, launches, fixes, or model releases from leading AI platforms (Claude, OpenAI, Gemini, ChatGPT, DeepSeek, Meta)")
+    wow_moment: Optional[str] = Field(description="Wow moment highlight: Major AI advancement, frontier model breakthrough, or LLM accuracy leap")
+    aww_moment: Optional[str] = Field(description="Aww moment highlight: Agent failure, hallucination incident, security hack, vulnerability, or accuracy drop")
     knowledge_triplets: List[EntityTriplet] = Field(description="Extracted relational knowledge graph triplets")
 
 # ============================================================================
@@ -276,14 +279,18 @@ def save_to_neon_db(article_payload: dict, embedding: list, analysis: TechnicalA
                 id, title, source_name, source_url, category, depth_level,
                 tldr, takeaways, code_snippet, full_analysis,
                 github_repo_name, github_repo_url, github_stars,
-                metric_label, metric_value, entity_tags
-            ) VALUES (%s, %s, %s, %s, %s::source_category, %s::depth_level_enum, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s, %s::jsonb)
+                metric_label, metric_value, entity_tags,
+                ai_tech_news_summary, wow_moment, aww_moment
+            ) VALUES (%s, %s, %s, %s, %s::source_category, %s::depth_level_enum, %s, %s::jsonb, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s, %s, %s)
             ON CONFLICT (source_url) DO UPDATE SET
                 tldr = EXCLUDED.tldr,
                 takeaways = EXCLUDED.takeaways,
                 code_snippet = EXCLUDED.code_snippet,
                 full_analysis = EXCLUDED.full_analysis,
-                entity_tags = EXCLUDED.entity_tags;
+                entity_tags = EXCLUDED.entity_tags,
+                ai_tech_news_summary = EXCLUDED.ai_tech_news_summary,
+                wow_moment = EXCLUDED.wow_moment,
+                aww_moment = EXCLUDED.aww_moment;
         """, (
             article_payload["id"], article_payload["title"], article_payload["source"],
             article_payload["repo"]["url"] if article_payload["repo"] else f"https://arxiv.org/abs/{article_payload['id']}",
@@ -294,7 +301,10 @@ def save_to_neon_db(article_payload: dict, embedding: list, analysis: TechnicalA
             article_payload["repo"]["stars"] if article_payload["repo"] else None,
             article_payload["metric"]["label"] if article_payload["metric"] else None,
             article_payload["metric"]["val"] if article_payload["metric"] else None,
-            Json(analysis.entity_tags)
+            Json(analysis.entity_tags),
+            analysis.ai_tech_news_summary,
+            analysis.wow_moment,
+            analysis.aww_moment
         ))
 
         # 2. Upsert Vector Embedding
@@ -369,7 +379,10 @@ def run_pipeline():
                 "fullAnalysis": analysis.full_analysis,
                 "metric": {"label": analysis.metric_label, "val": analysis.metric_value} if analysis.metric_label else None,
                 "repo": {"name": analysis.github_repo_name or "GitHub Link", "url": analysis.github_repo_url or paper['url'], "stars": "1.5k"} if analysis.github_repo_name else None,
-                "entity_tags": analysis.entity_tags
+                "entity_tags": analysis.entity_tags,
+                "ai_tech_news_summary": analysis.ai_tech_news_summary,
+                "wow_moment": analysis.wow_moment,
+                "aww_moment": analysis.aww_moment
             }
 
             processed_articles.append(article_payload)
