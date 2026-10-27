@@ -33,6 +33,7 @@ import androidx.core.content.ContextCompat
 import com.deepindex.ai.data.db.ArticleEntity
 import com.deepindex.ai.ui.components.BoldDevCard
 import com.deepindex.ai.ui.components.DetailModal
+import com.deepindex.ai.ui.components.SettingsModal
 import com.deepindex.ai.ui.theme.*
 import com.deepindex.ai.ui.viewmodel.NewsViewModel
 
@@ -45,7 +46,7 @@ fun MainScreen(viewModel: NewsViewModel) {
     val modalArticle by viewModel.selectedArticleForModal.collectAsState()
     val toastMsg by viewModel.toastMessage.collectAsState()
 
-    var isSearchVisible by remember { mutableStateOf(false) }
+    var isSettingsVisible by remember { mutableStateOf(false) }
     var activeMomentDialog by remember { mutableStateOf<String?>(null) } // "WOW" or "AWW" or null
 
     Box(
@@ -90,7 +91,7 @@ fun MainScreen(viewModel: NewsViewModel) {
                         }
                     }
 
-                    // Header Action Buttons (Saved & Search)
+                    // Header Action Buttons (Saved & Settings)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
@@ -113,46 +114,19 @@ fun MainScreen(viewModel: NewsViewModel) {
                             )
                         }
 
-                        // Search Toggle Button
+                        // Settings Button
                         Box(
                             modifier = Modifier
                                 .size(44.dp)
                                 .shadow(4.dp, RoundedCornerShape(16.dp))
                                 .background(BrandBlue, RoundedCornerShape(16.dp))
                                 .border(2.dp, Slate950, RoundedCornerShape(16.dp))
-                                .clickable { isSearchVisible = !isSearchVisible },
+                                .clickable { isSettingsVisible = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.Search, contentDescription = "Search", tint = Color.White, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.White, modifier = Modifier.size(20.dp))
                         }
                     }
-                }
-
-                // Expandable Search Bar
-                AnimatedVisibility(visible = isSearchVisible) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { viewModel.setSearchQuery(it) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp),
-                        placeholder = { Text("Search paper, PyTorch, vLLM, CUDA...", color = Slate700, fontSize = 13.sp, fontWeight = FontWeight.Bold) },
-                        singleLine = true,
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = Slate900,
-                            unfocusedContainerColor = Slate900,
-                            focusedBorderColor = BrandBlue,
-                            unfocusedBorderColor = Slate800,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
-                        ),
-                        trailingIcon = {
-                            IconButton(onClick = { viewModel.setSearchQuery("") }) {
-                                Icon(Icons.Default.Close, contentDescription = "Clear", tint = Slate300)
-                            }
-                        }
-                    )
                 }
 
                 // 7-Pillar Taxonomy Categories Carousel (Silicon & Infra and Policy & Law moved to the end)
@@ -753,6 +727,17 @@ fun MainScreen(viewModel: NewsViewModel) {
                 onCopyCode = { code ->
                     copyToClipboard(context, code)
                     viewModel.showToast("Code copied!")
+                }
+            )
+        }
+
+        // Settings Modal Bottom Sheet
+        if (isSettingsVisible) {
+            SettingsModal(
+                onDismiss = { isSettingsVisible = false },
+                onOpenUrl = { url ->
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+                    context.startActivity(intent)
                 }
             )
         }
