@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,11 +24,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.core.content.ContextCompat
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.deepindex.ai.data.db.ArticleEntity
 import com.deepindex.ai.ui.components.BoldDevCard
 import com.deepindex.ai.ui.components.DetailModal
@@ -44,6 +46,7 @@ fun MainScreen(viewModel: NewsViewModel) {
     val toastMsg by viewModel.toastMessage.collectAsState()
 
     var isSearchVisible by remember { mutableStateOf(false) }
+    var activeMomentDialog by remember { mutableStateOf<String?>(null) } // "WOW" or "AWW" or null
 
     Box(
         modifier = Modifier
@@ -152,7 +155,7 @@ fun MainScreen(viewModel: NewsViewModel) {
                     )
                 }
 
-                // 7-Pillar Taxonomy Categories Carousel
+                // 7-Pillar Taxonomy Categories Carousel (Silicon & Infra and Policy & Law moved to the end)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -162,11 +165,11 @@ fun MainScreen(viewModel: NewsViewModel) {
                     CategoryChip("🏠 Home", selectedCategory == "home") { viewModel.selectCategory("home") }
                     CategoryChip("🔬 Research", selectedCategory == "research") { viewModel.selectCategory("research") }
                     CategoryChip("⚡ Dev & Tooling", selectedCategory == "dev") { viewModel.selectCategory("dev") }
-                    CategoryChip("💻 Silicon & Infra", selectedCategory == "silicon") { viewModel.selectCategory("silicon") }
                     CategoryChip("🏢 Enterprise", selectedCategory == "enterprise") { viewModel.selectCategory("enterprise") }
-                    CategoryChip("⚖️ Policy & Law", selectedCategory == "policy") { viewModel.selectCategory("policy") }
                     CategoryChip("📈 Biz & Capital", selectedCategory == "business") { viewModel.selectCategory("business") }
                     CategoryChip("📊 Benchmarks", selectedCategory == "benchmarks") { viewModel.selectCategory("benchmarks") }
+                    CategoryChip("💻 Silicon & Infra", selectedCategory == "silicon") { viewModel.selectCategory("silicon") }
+                    CategoryChip("⚖️ Policy & Law", selectedCategory == "policy") { viewModel.selectCategory("policy") }
                 }
             }
 
@@ -311,12 +314,15 @@ fun MainScreen(viewModel: NewsViewModel) {
                         }
                     }
 
-
-
-                    // AI Tech News Summary Card
+                    // Redesigned AI Tech News Banner as Horizontal Scroll Ticker
                     item {
-                        val aiTechNews = articles.firstOrNull { !it.aiTechNewsSummary.isNullOrBlank() }?.aiTechNewsSummary
-                            ?: "Claude 3.7 Sonnet & GPT-4.5 release hybrid reasoning modes; DeepSeek-R1 slashes open-weights inference cost by 90% while Gemini 2.5 Pro expands context window to 4M tokens."
+                        val platformNewsList = listOf(
+                            Triple("CLAUDE 3.7 SONNET", "Anthropic releases Claude 3.7 Sonnet featuring hybrid instant & extended step-by-step thinking reasoning mode.", BrandCyan),
+                            Triple("OPENAI GPT-4.5 & O3", "OpenAI launches GPT-4.5 & O3 mini with 94.2% AIME math accuracy and zero-shot code synthesis.", BrandYellow),
+                            Triple("DEEPSEEK-R1", "DeepSeek-R1 open weights match proprietary frontier LLMs at 90% lower inference cost.", Color(0xFF10B981)),
+                            Triple("GEMINI 2.5 PRO", "Google expands Gemini 2.5 Pro context window to 4M tokens with sub-100ms first token latency.", BrandRose),
+                            Triple("META LLAMA 4", "Meta AI previews Llama 4 multi-modal agentic architecture across vision and CUDA kernel generation.", BrandCyan)
+                        )
 
                         Card(
                             modifier = Modifier
@@ -329,47 +335,101 @@ fun MainScreen(viewModel: NewsViewModel) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    .padding(vertical = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        text = "📰 AI TECH NEWS & PLATFORM LAUNCHES",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = FontFamily.Monospace,
-                                        color = BrandCyan
-                                    )
-                                    Box(
-                                        modifier = Modifier
-                                            .background(BrandBlue.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
-                                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "CLAUDE • OPENAI • GEMINI • DEEPSEEK",
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
+                                            text = "📰 AI TECH NEWS",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Black,
                                             fontFamily = FontFamily.Monospace,
                                             color = BrandCyan
                                         )
+                                        Box(
+                                            modifier = Modifier
+                                                .background(BrandCyan.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+                                                .padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = "SWIPE →",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Black,
+                                                fontFamily = FontFamily.Monospace,
+                                                color = BrandCyan
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        text = "LIVE PLATFORM LAUNCHES",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = Slate300
+                                    )
+                                }
+
+                                LazyRow(
+                                    contentPadding = PaddingValues(horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    items(platformNewsList) { (provider, summary, accentColor) ->
+                                        Box(
+                                            modifier = Modifier
+                                                .width(260.dp)
+                                                .background(Slate950, RoundedCornerShape(16.dp))
+                                                .border(1.dp, Slate800, RoundedCornerShape(16.dp))
+                                                .padding(14.dp)
+                                        ) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Text(
+                                                        text = provider,
+                                                        fontSize = 10.sp,
+                                                        fontWeight = FontWeight.Black,
+                                                        fontFamily = FontFamily.Monospace,
+                                                        color = accentColor
+                                                    )
+                                                    Text(
+                                                        text = "NEW",
+                                                        fontSize = 9.sp,
+                                                        fontWeight = FontWeight.Black,
+                                                        fontFamily = FontFamily.Monospace,
+                                                        color = BrandYellow
+                                                    )
+                                                }
+                                                Text(
+                                                    text = summary,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Medium,
+                                                    color = Slate100,
+                                                    lineHeight = 16.sp,
+                                                    maxLines = 3,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                            }
+                                        }
                                     }
                                 }
-                                Text(
-                                    text = aiTechNews,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Slate100,
-                                    lineHeight = 18.sp
-                                )
                             }
                         }
                     }
 
-                    // Wow Moment & Aww Moment Cards
+                    // Redesigned Wow Moment & Aww Moment as Concise Summaries with Click Pop-up
                     item {
                         val wowText = articles.firstOrNull { !it.wowMoment.isNullOrBlank() }?.wowMoment
                             ?: "Claude 3.7 Sonnet & DeepSeek-R1 achieve 92.4% SWE-bench accuracy, matching domain experts via hybrid instant/extended reasoning!"
@@ -380,12 +440,13 @@ fun MainScreen(viewModel: NewsViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            // Wow Moment Card
+                            // Wow Moment Summary Card
                             Card(
                                 modifier = Modifier
                                     .weight(1f)
                                     .shadow(6.dp, RoundedCornerShape(20.dp))
-                                    .border(2.dp, Color(0xFF10B981), RoundedCornerShape(20.dp)),
+                                    .border(2.dp, Color(0xFF10B981), RoundedCornerShape(20.dp))
+                                    .clickable { activeMomentDialog = "WOW" },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(containerColor = Slate900)
                             ) {
@@ -395,35 +456,51 @@ fun MainScreen(viewModel: NewsViewModel) {
                                         .padding(14.dp),
                                     verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text(
-                                        text = "🚀 WOW MOMENT",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = FontFamily.Monospace,
-                                        color = Color(0xFF10B981)
-                                    )
-                                    Text(
-                                        text = "Frontier AI & LLM Leaps",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Slate300
-                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "🚀 WOW MOMENT",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = Color(0xFF10B981)
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.Info,
+                                            contentDescription = "Info",
+                                            tint = Color(0xFF10B981),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
                                     Text(
                                         text = wowText,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = Color.White,
-                                        lineHeight = 16.sp
+                                        lineHeight = 16.sp,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = "Tap for Pop-up Details →",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = Color(0xFF10B981)
                                     )
                                 }
                             }
 
-                            // Aww Moment Card
+                            // Aww Moment Summary Card
                             Card(
                                 modifier = Modifier
                                     .weight(1f)
                                     .shadow(6.dp, RoundedCornerShape(20.dp))
-                                    .border(2.dp, BrandRose, RoundedCornerShape(20.dp)),
+                                    .border(2.dp, BrandRose, RoundedCornerShape(20.dp))
+                                    .clickable { activeMomentDialog = "AWW" },
                                 shape = RoundedCornerShape(20.dp),
                                 colors = CardDefaults.cardColors(containerColor = Slate900)
                             ) {
@@ -433,25 +510,40 @@ fun MainScreen(viewModel: NewsViewModel) {
                                         .padding(14.dp),
                                     verticalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
-                                    Text(
-                                        text = "💔 AWW MOMENT",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Black,
-                                        fontFamily = FontFamily.Monospace,
-                                        color = BrandRose
-                                    )
-                                    Text(
-                                        text = "Agent Fails & Hallucinations",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Slate300
-                                    )
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "💔 AWW MOMENT",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = BrandRose
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.Warning,
+                                            contentDescription = "Warning",
+                                            tint = BrandRose,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
                                     Text(
                                         text = awwText,
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = Color.White,
-                                        lineHeight = 16.sp
+                                        lineHeight = 16.sp,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        text = "Tap for Pop-up Details →",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = BrandRose
                                     )
                                 }
                             }
@@ -542,6 +634,109 @@ fun MainScreen(viewModel: NewsViewModel) {
                     )
                 }
             }
+        }
+
+        // Pop-up Dialog for Wow & Aww Moment Details
+        if (activeMomentDialog != null) {
+            val isWow = activeMomentDialog == "WOW"
+            val wowText = articles.firstOrNull { !it.wowMoment.isNullOrBlank() }?.wowMoment
+                ?: "Claude 3.7 Sonnet & DeepSeek-R1 achieve 92.4% SWE-bench accuracy, matching domain experts via hybrid instant/extended reasoning!"
+            val awwText = articles.firstOrNull { !it.awwMoment.isNullOrBlank() }?.awwMoment
+                ?: "Autonomous AI dev agent hallucinated production DB migration parameters and recursively dropped live customer schema during automated pipeline release!"
+
+            val title = if (isWow) "🚀 WOW MOMENT: FRONTIER AI ADVANCEMENT" else "💔 AWW MOMENT: AGENT FAILURE & HALLUCINATION"
+            val accentColor = if (isWow) Color(0xFF10B981) else BrandRose
+            val contentText = if (isWow) wowText else awwText
+            val categoryLabel = if (isWow) "ADVANCEMENTS • FRONTIER LLMS • ACCURACY LEAPS" else "AGENT FAILURES • HALLUCINATIONS • HACKS"
+
+            AlertDialog(
+                onDismissRequest = { activeMomentDialog = null },
+                containerColor = Slate900,
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.border(2.dp, accentColor, RoundedCornerShape(24.dp)),
+                title = {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .background(accentColor.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = categoryLabel,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black,
+                                fontFamily = FontFamily.Monospace,
+                                color = accentColor
+                            )
+                        }
+                        Text(
+                            text = title,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color.White
+                        )
+                    }
+                },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Slate950, RoundedCornerShape(16.dp))
+                                .border(1.dp, Slate800, RoundedCornerShape(16.dp))
+                                .padding(14.dp)
+                        ) {
+                            Text(
+                                text = contentText,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = Slate100,
+                                lineHeight = 20.sp
+                            )
+                        }
+
+                        if (isWow) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(Color(0xFF10B981).copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("BENCHMARK SCORE", fontSize = 10.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, color = Slate300)
+                                Text("92.4% SWE-BENCH", fontSize = 11.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, color = Color(0xFF10B981))
+                            }
+                        } else {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(BrandRose.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
+                                    .padding(10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("IMPACT SEVERITY", fontSize = 10.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, color = Slate300)
+                                Text("HIGH RISK / OUTAGE", fontSize = 11.sp, fontWeight = FontWeight.Black, fontFamily = FontFamily.Monospace, color = BrandRose)
+                            }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { activeMomentDialog = null },
+                        colors = ButtonDefaults.buttonColors(containerColor = accentColor),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Close",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            )
         }
 
         // Detail Modal Bottom Sheet
