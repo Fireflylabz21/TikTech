@@ -1,6 +1,10 @@
-# Local configuration file
+# Local configuration file & Database / migration scripts
 .env
 local.properties
+apply_schema.py
+verify_db.py
+check_db.py
+.artifacts/
 
 # Build directories
 build/
