@@ -24,45 +24,53 @@ interface NeonApiService {
     }
 }
 
+data class MetricDto(
+    val label: String?,
+    @com.google.gson.annotations.SerializedName("val")
+    val value: String?
+)
+
+data class RepoDto(
+    val name: String?,
+    val url: String?,
+    val stars: String?
+)
+
 data class ArticleDto(
     val id: String,
     val title: String,
-    val source_name: String,
-    val source_url: String,
+    val source: String,
     val category: String,
-    val depth_level: String,
+    val depth: String,
     val tldr: String,
     val takeaways: List<String>,
-    val code_snippet: String?,
-    val full_analysis: String?,
-    val github_repo_name: String?,
-    val github_repo_url: String?,
-    val github_stars: String?,
-    val metric_label: String?,
-    val metric_value: String?,
+    val code: String?,
+    val fullAnalysis: String?,
+    val metric: MetricDto?,
+    val repo: RepoDto?,
     val entity_tags: List<String>?,
-    val published_at: String
+    val published_at: String?
 ) {
     fun toEntity(): ArticleEntity {
         val gson = com.google.gson.Gson()
         return ArticleEntity(
             id = id,
             title = title,
-            sourceName = source_name,
-            sourceUrl = source_url,
+            sourceName = source,
+            sourceUrl = repo?.url ?: "https://arxiv.org/abs/$id",
             category = category,
-            depthLevel = depth_level,
+            depthLevel = depth,
             tldr = tldr,
             takeawaysJson = gson.toJson(takeaways),
-            codeSnippet = code_snippet,
-            fullAnalysis = full_analysis,
-            githubRepoName = github_repo_name,
-            githubRepoUrl = github_repo_url,
-            githubStars = github_stars,
-            metricLabel = metric_label,
-            metricValue = metric_value,
+            codeSnippet = code,
+            fullAnalysis = fullAnalysis,
+            githubRepoName = repo?.name,
+            githubRepoUrl = repo?.url,
+            githubStars = repo?.stars,
+            metricLabel = metric?.label,
+            metricValue = metric?.value,
             entityTagsJson = gson.toJson(entity_tags ?: emptyList<String>()),
-            publishedAt = published_at,
+            publishedAt = published_at ?: "2026-10-27",
             isBookmarked = false
         )
     }

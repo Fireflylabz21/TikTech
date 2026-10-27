@@ -95,6 +95,7 @@ USING hnsw (embedding vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 
 -- 7. Neon-Optimized Hybrid Vector Search Function (RPC)
+DROP FUNCTION IF EXISTS search_articles(vector, source_category, FLOAT, INT);
 CREATE OR REPLACE FUNCTION search_articles(
     query_embedding vector(384),
     filter_category source_category DEFAULT NULL,
