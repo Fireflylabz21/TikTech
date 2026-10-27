@@ -1,0 +1,19 @@
+# Local configuration file
+.env
+local.properties
+
+# Build directories
+build/
+app/build/
+
+# Gradle
+.gradle/
+captures/
+.externalNativeBuild
+.cxx/
+
+# IDE
+.idea/
+.kotlin/
+*.iml
+.DS_Store

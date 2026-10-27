@@ -42,7 +42,7 @@ public final class ArticleDao_Impl implements ArticleDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `articles` (`id`,`title`,`sourceName`,`sourceUrl`,`category`,`depthLevel`,`tldr`,`takeawaysJson`,`codeSnippet`,`fullAnalysis`,`githubRepoName`,`githubRepoUrl`,`githubStars`,`metricLabel`,`metricValue`,`publishedAt`,`isBookmarked`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `articles` (`id`,`title`,`sourceName`,`sourceUrl`,`category`,`depthLevel`,`tldr`,`takeawaysJson`,`codeSnippet`,`fullAnalysis`,`githubRepoName`,`githubRepoUrl`,`githubStars`,`metricLabel`,`metricValue`,`entityTagsJson`,`publishedAt`,`isBookmarked`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -91,9 +91,14 @@ public final class ArticleDao_Impl implements ArticleDao {
         } else {
           statement.bindString(15, entity.getMetricValue());
         }
-        statement.bindString(16, entity.getPublishedAt());
+        if (entity.getEntityTagsJson() == null) {
+          statement.bindNull(16);
+        } else {
+          statement.bindString(16, entity.getEntityTagsJson());
+        }
+        statement.bindString(17, entity.getPublishedAt());
         final int _tmp = entity.isBookmarked() ? 1 : 0;
-        statement.bindLong(17, _tmp);
+        statement.bindLong(18, _tmp);
       }
     };
     this.__preparedStmtOfUpdateBookmark = new SharedSQLiteStatement(__db) {
@@ -179,6 +184,7 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfGithubStars = CursorUtil.getColumnIndexOrThrow(_cursor, "githubStars");
           final int _cursorIndexOfMetricLabel = CursorUtil.getColumnIndexOrThrow(_cursor, "metricLabel");
           final int _cursorIndexOfMetricValue = CursorUtil.getColumnIndexOrThrow(_cursor, "metricValue");
+          final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
@@ -242,13 +248,19 @@ public final class ArticleDao_Impl implements ArticleDao {
             } else {
               _tmpMetricValue = _cursor.getString(_cursorIndexOfMetricValue);
             }
+            final String _tmpEntityTagsJson;
+            if (_cursor.isNull(_cursorIndexOfEntityTagsJson)) {
+              _tmpEntityTagsJson = null;
+            } else {
+              _tmpEntityTagsJson = _cursor.getString(_cursorIndexOfEntityTagsJson);
+            }
             final String _tmpPublishedAt;
             _tmpPublishedAt = _cursor.getString(_cursorIndexOfPublishedAt);
             final boolean _tmpIsBookmarked;
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpPublishedAt,_tmpIsBookmarked);
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
             _result.add(_item);
           }
           return _result;
@@ -291,6 +303,7 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfGithubStars = CursorUtil.getColumnIndexOrThrow(_cursor, "githubStars");
           final int _cursorIndexOfMetricLabel = CursorUtil.getColumnIndexOrThrow(_cursor, "metricLabel");
           final int _cursorIndexOfMetricValue = CursorUtil.getColumnIndexOrThrow(_cursor, "metricValue");
+          final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
@@ -354,13 +367,19 @@ public final class ArticleDao_Impl implements ArticleDao {
             } else {
               _tmpMetricValue = _cursor.getString(_cursorIndexOfMetricValue);
             }
+            final String _tmpEntityTagsJson;
+            if (_cursor.isNull(_cursorIndexOfEntityTagsJson)) {
+              _tmpEntityTagsJson = null;
+            } else {
+              _tmpEntityTagsJson = _cursor.getString(_cursorIndexOfEntityTagsJson);
+            }
             final String _tmpPublishedAt;
             _tmpPublishedAt = _cursor.getString(_cursorIndexOfPublishedAt);
             final boolean _tmpIsBookmarked;
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpPublishedAt,_tmpIsBookmarked);
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
             _result.add(_item);
           }
           return _result;
@@ -405,6 +424,7 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfGithubStars = CursorUtil.getColumnIndexOrThrow(_cursor, "githubStars");
           final int _cursorIndexOfMetricLabel = CursorUtil.getColumnIndexOrThrow(_cursor, "metricLabel");
           final int _cursorIndexOfMetricValue = CursorUtil.getColumnIndexOrThrow(_cursor, "metricValue");
+          final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
@@ -468,13 +488,19 @@ public final class ArticleDao_Impl implements ArticleDao {
             } else {
               _tmpMetricValue = _cursor.getString(_cursorIndexOfMetricValue);
             }
+            final String _tmpEntityTagsJson;
+            if (_cursor.isNull(_cursorIndexOfEntityTagsJson)) {
+              _tmpEntityTagsJson = null;
+            } else {
+              _tmpEntityTagsJson = _cursor.getString(_cursorIndexOfEntityTagsJson);
+            }
             final String _tmpPublishedAt;
             _tmpPublishedAt = _cursor.getString(_cursorIndexOfPublishedAt);
             final boolean _tmpIsBookmarked;
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpPublishedAt,_tmpIsBookmarked);
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
             _result.add(_item);
           }
           return _result;
@@ -515,6 +541,7 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfGithubStars = CursorUtil.getColumnIndexOrThrow(_cursor, "githubStars");
           final int _cursorIndexOfMetricLabel = CursorUtil.getColumnIndexOrThrow(_cursor, "metricLabel");
           final int _cursorIndexOfMetricValue = CursorUtil.getColumnIndexOrThrow(_cursor, "metricValue");
+          final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
@@ -578,13 +605,19 @@ public final class ArticleDao_Impl implements ArticleDao {
             } else {
               _tmpMetricValue = _cursor.getString(_cursorIndexOfMetricValue);
             }
+            final String _tmpEntityTagsJson;
+            if (_cursor.isNull(_cursorIndexOfEntityTagsJson)) {
+              _tmpEntityTagsJson = null;
+            } else {
+              _tmpEntityTagsJson = _cursor.getString(_cursorIndexOfEntityTagsJson);
+            }
             final String _tmpPublishedAt;
             _tmpPublishedAt = _cursor.getString(_cursorIndexOfPublishedAt);
             final boolean _tmpIsBookmarked;
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpPublishedAt,_tmpIsBookmarked);
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
             _result.add(_item);
           }
           return _result;
