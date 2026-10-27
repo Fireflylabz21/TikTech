@@ -10,10 +10,10 @@ data class ArticleEntity(
     val title: String,
     val sourceName: String,
     val sourceUrl: String = "https://github.com",
-    val category: String, // casestudies, security, compliance, infra, models, industry
+    val category: String, // research, dev, silicon, enterprise, policy, business, benchmarks
     val depthLevel: String, // L1 OVERVIEW, L2 DEEP DIVE, L3 MATH/KERNEL
     val tldr: String,
-    val takeawaysJson: String, // Stored as JSON string
+    val takeawaysJson: String,
     val codeSnippet: String?,
     val fullAnalysis: String?,
     val githubRepoName: String?,
@@ -21,6 +21,7 @@ data class ArticleEntity(
     val githubStars: String?,
     val metricLabel: String?,
     val metricValue: String?,
+    val entityTagsJson: String? = "[]",
     val publishedAt: String,
     var isBookmarked: Boolean = false
 )

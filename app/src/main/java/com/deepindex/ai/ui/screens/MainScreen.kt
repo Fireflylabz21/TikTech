@@ -15,7 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,9 +33,6 @@ import com.deepindex.ai.ui.components.BoldDevCard
 import com.deepindex.ai.ui.components.DetailModal
 import com.deepindex.ai.ui.theme.*
 import com.deepindex.ai.ui.viewmodel.NewsViewModel
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun MainScreen(viewModel: NewsViewModel) {
@@ -64,7 +60,6 @@ fun MainScreen(viewModel: NewsViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Slate950)
-                    .border(width = 0.dp, color = Color.Transparent)
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -157,7 +152,7 @@ fun MainScreen(viewModel: NewsViewModel) {
                     )
                 }
 
-                // Big Horizontal Categories Carousel
+                // 7-Pillar Taxonomy Categories Carousel
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -165,12 +160,13 @@ fun MainScreen(viewModel: NewsViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     CategoryChip("🏠 Home", selectedCategory == "home") { viewModel.selectCategory("home") }
-                    CategoryChip("⚡ Dev Feed", selectedCategory == "all") { viewModel.selectCategory("all") }
-                    CategoryChip("🏢 Case Studies", selectedCategory == "casestudies") { viewModel.selectCategory("casestudies") }
-                    CategoryChip("🛡️ CyberSec", selectedCategory == "security") { viewModel.selectCategory("security") }
-                    CategoryChip("⚖️ Compliance", selectedCategory == "compliance") { viewModel.selectCategory("compliance") }
-                    CategoryChip("🛠️ Stack & GPU", selectedCategory == "infra") { viewModel.selectCategory("infra") }
-                    CategoryChip("🔬 Models", selectedCategory == "models") { viewModel.selectCategory("models") }
+                    CategoryChip("🔬 Research", selectedCategory == "research") { viewModel.selectCategory("research") }
+                    CategoryChip("⚡ Dev & Tooling", selectedCategory == "dev") { viewModel.selectCategory("dev") }
+                    CategoryChip("💻 Silicon & Infra", selectedCategory == "silicon") { viewModel.selectCategory("silicon") }
+                    CategoryChip("🏢 Enterprise", selectedCategory == "enterprise") { viewModel.selectCategory("enterprise") }
+                    CategoryChip("⚖️ Policy & Law", selectedCategory == "policy") { viewModel.selectCategory("policy") }
+                    CategoryChip("📈 Biz & Capital", selectedCategory == "business") { viewModel.selectCategory("business") }
+                    CategoryChip("📊 Benchmarks", selectedCategory == "benchmarks") { viewModel.selectCategory("benchmarks") }
                 }
             }
 
@@ -180,7 +176,7 @@ fun MainScreen(viewModel: NewsViewModel) {
                     .fillMaxWidth()
                     .weight(1f)
                     .background(Slate950),
-                contentPadding = PaddingHorizontal(16.dp, 16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (selectedCategory == "home" && searchQuery.isBlank()) {
@@ -214,14 +210,14 @@ fun MainScreen(viewModel: NewsViewModel) {
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
-                                            text = "⚡ DAILY BRIEFING",
+                                            text = "⚡ DAILY ECOSYSTEM BRIEFING",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Black,
                                             fontFamily = FontFamily.Monospace,
                                             color = BrandYellow
                                         )
                                         Text(
-                                            text = "OCT 2026",
+                                            text = "2026",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Black,
                                             fontFamily = FontFamily.Monospace,
@@ -229,14 +225,14 @@ fun MainScreen(viewModel: NewsViewModel) {
                                         )
                                     }
                                     Text(
-                                        text = "AI ECOSYSTEM ROUNDUP: HARDWARE GAINS & COMPLIANCE RULES",
+                                        text = "AI ECOSYSTEM INTELLIGENCE: 7-PILLAR TAXONOMY & MULTI-AGENT SYNC",
                                         fontSize = 18.sp,
                                         fontWeight = FontWeight.Black,
                                         color = Color.White,
                                         lineHeight = 22.sp
                                     )
                                     Text(
-                                        text = "Key breakthroughs in hardware efficiency, open-weight models, and regulatory frameworks. Tap to explore.",
+                                        text = "Synthesizing research pre-prints, silicon scaling, open weights, and regulatory compliance.",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Slate100,
@@ -259,14 +255,14 @@ fun MainScreen(viewModel: NewsViewModel) {
                             ) {
                                 Icon(Icons.Default.Code, contentDescription = "Code", tint = BrandCyan, modifier = Modifier.size(14.dp))
                                 Text(
-                                    text = "TECHNICAL HIGHLIGHTS",
+                                    text = "LIVE INTELLIGENCE STREAM",
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.Black,
                                     fontFamily = FontFamily.Monospace,
                                     color = Slate300
                                 )
                             }
-                            TextButton(onClick = { viewModel.selectCategory("all") }) {
+                            TextButton(onClick = { viewModel.selectCategory("research") }) {
                                 Text(
                                     text = "View All →",
                                     fontSize = 12.sp,
@@ -290,7 +286,7 @@ fun MainScreen(viewModel: NewsViewModel) {
                         ) {
                             Icon(Icons.Default.SentimentDissatisfied, contentDescription = "Empty", tint = BrandYellow, modifier = Modifier.size(48.dp))
                             Text(
-                                text = "NO ARTICLES FOUND",
+                                text = "NO STORIES FOUND",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Black,
                                 fontFamily = FontFamily.Monospace,
@@ -415,23 +411,8 @@ fun CategoryChip(
     }
 }
 
-fun PaddingHorizontal(start: androidx.compose.ui.unit.Dp, end: androidx.compose.ui.unit.Dp): PaddingValues {
-    return PaddingValues(start = start, end = end)
-}
-
 fun copyToClipboard(context: Context, text: String) {
     val clipboard = ContextCompat.getSystemService(context, ClipboardManager::class.java)
     val clip = ClipData.newPlainText("DeepIndex AI", text)
     clipboard?.setPrimaryClip(clip)
-}
-
-@androidx.compose.ui.tooling.preview.Preview(showBackground = true, backgroundColor = 0xFF020617)
-@Composable
-fun MainScreenPreview() {
-    TikTechTheme {
-        // Preview placeholder or mock
-        Box(modifier = Modifier.fillMaxSize().background(Slate950), contentAlignment = Alignment.Center) {
-            Text("DeepIndex AI Preview", color = Color.White, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-        }
-    }
 }

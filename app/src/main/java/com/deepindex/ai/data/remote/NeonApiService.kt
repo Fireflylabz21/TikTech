@@ -40,9 +40,11 @@ data class ArticleDto(
     val github_stars: String?,
     val metric_label: String?,
     val metric_value: String?,
+    val entity_tags: List<String>?,
     val published_at: String
 ) {
     fun toEntity(): ArticleEntity {
+        val gson = com.google.gson.Gson()
         return ArticleEntity(
             id = id,
             title = title,
@@ -51,7 +53,7 @@ data class ArticleDto(
             category = category,
             depthLevel = depth_level,
             tldr = tldr,
-            takeawaysJson = com.google.gson.Gson().toJson(takeaways),
+            takeawaysJson = gson.toJson(takeaways),
             codeSnippet = code_snippet,
             fullAnalysis = full_analysis,
             githubRepoName = github_repo_name,
@@ -59,6 +61,7 @@ data class ArticleDto(
             githubStars = github_stars,
             metricLabel = metric_label,
             metricValue = metric_value,
+            entityTagsJson = gson.toJson(entity_tags ?: emptyList<String>()),
             publishedAt = published_at,
             isBookmarked = false
         )

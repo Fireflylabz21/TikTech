@@ -15,7 +15,7 @@ class NewsViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         val articleDao = (application as TikTechApplication).database.articleDao()
-        repository = ArticleRepository(articleDao)
+        repository = ArticleRepository(articleDao, application)
         
         // Sync live data from Neon DB on app startup
         viewModelScope.launch {

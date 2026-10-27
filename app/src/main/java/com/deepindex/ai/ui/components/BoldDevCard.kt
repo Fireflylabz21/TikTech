@@ -45,6 +45,15 @@ fun BoldDevCard(
         }
     }
 
+    val entityTags: List<String> = remember(article.entityTagsJson) {
+        try {
+            val type = object : TypeToken<List<String>>() {}.type
+            Gson().fromJson(article.entityTagsJson, type) ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     val depthColor = when {
         article.depthLevel.contains("L3") -> BrandRose
         article.depthLevel.contains("L2") -> BrandYellow
@@ -106,6 +115,30 @@ fun BoldDevCard(
                 color = Color.White,
                 lineHeight = 22.sp
             )
+
+            // Entity Tags Badges
+            if (entityTags.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    entityTags.take(3).forEach { tag ->
+                        Box(
+                            modifier = Modifier
+                                .background(Slate800, RoundedCornerShape(8.dp))
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text(
+                                text = "🏷️ $tag",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                color = BrandCyan
+                            )
+                        }
+                    }
+                }
+            }
 
             // In-Card Segmented Controls
             Row(
