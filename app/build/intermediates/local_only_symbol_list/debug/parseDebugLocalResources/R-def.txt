@@ -3,5 +3,7 @@ local
 color slate_950
 drawable ic_launcher
 drawable ic_launcher_round
+drawable splasscreen
+drawable tiktech_icon
 string app_name
 style Theme.TikTech

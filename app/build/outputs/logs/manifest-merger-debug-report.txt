@@ -103,9 +103,9 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\Admin\.gradle\cach
 	android:label
 		ADDED from C:\Users\Admin\Desktop\TikTech\app\src\main\AndroidManifest.xml:12:9-41
 	android:roundIcon
-		ADDED from C:\Users\Admin\Desktop\TikTech\app\src\main\AndroidManifest.xml:13:9-56
+		ADDED from C:\Users\Admin\Desktop\TikTech\app\src\main\AndroidManifest.xml:13:9-51
 	android:icon
-		ADDED from C:\Users\Admin\Desktop\TikTech\app\src\main\AndroidManifest.xml:11:9-45
+		ADDED from C:\Users\Admin\Desktop\TikTech\app\src\main\AndroidManifest.xml:11:9-46
 	android:allowBackup
 		ADDED from C:\Users\Admin\Desktop\TikTech\app\src\main\AndroidManifest.xml:10:9-35
 	android:theme

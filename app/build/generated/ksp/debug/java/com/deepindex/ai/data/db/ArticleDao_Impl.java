@@ -42,7 +42,7 @@ public final class ArticleDao_Impl implements ArticleDao {
       @Override
       @NonNull
       protected String createQuery() {
-        return "INSERT OR REPLACE INTO `articles` (`id`,`title`,`sourceName`,`sourceUrl`,`category`,`depthLevel`,`tldr`,`takeawaysJson`,`codeSnippet`,`fullAnalysis`,`githubRepoName`,`githubRepoUrl`,`githubStars`,`metricLabel`,`metricValue`,`entityTagsJson`,`publishedAt`,`isBookmarked`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        return "INSERT OR REPLACE INTO `articles` (`id`,`title`,`sourceName`,`sourceUrl`,`category`,`depthLevel`,`tldr`,`takeawaysJson`,`codeSnippet`,`fullAnalysis`,`githubRepoName`,`githubRepoUrl`,`githubStars`,`metricLabel`,`metricValue`,`entityTagsJson`,`publishedAt`,`isBookmarked`,`aiTechNewsSummary`,`wowMoment`,`awwMoment`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
       }
 
       @Override
@@ -99,6 +99,21 @@ public final class ArticleDao_Impl implements ArticleDao {
         statement.bindString(17, entity.getPublishedAt());
         final int _tmp = entity.isBookmarked() ? 1 : 0;
         statement.bindLong(18, _tmp);
+        if (entity.getAiTechNewsSummary() == null) {
+          statement.bindNull(19);
+        } else {
+          statement.bindString(19, entity.getAiTechNewsSummary());
+        }
+        if (entity.getWowMoment() == null) {
+          statement.bindNull(20);
+        } else {
+          statement.bindString(20, entity.getWowMoment());
+        }
+        if (entity.getAwwMoment() == null) {
+          statement.bindNull(21);
+        } else {
+          statement.bindString(21, entity.getAwwMoment());
+        }
       }
     };
     this.__preparedStmtOfUpdateBookmark = new SharedSQLiteStatement(__db) {
@@ -187,6 +202,9 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
+          final int _cursorIndexOfAiTechNewsSummary = CursorUtil.getColumnIndexOrThrow(_cursor, "aiTechNewsSummary");
+          final int _cursorIndexOfWowMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "wowMoment");
+          final int _cursorIndexOfAwwMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "awwMoment");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final ArticleEntity _item;
@@ -260,7 +278,25 @@ public final class ArticleDao_Impl implements ArticleDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
+            final String _tmpAiTechNewsSummary;
+            if (_cursor.isNull(_cursorIndexOfAiTechNewsSummary)) {
+              _tmpAiTechNewsSummary = null;
+            } else {
+              _tmpAiTechNewsSummary = _cursor.getString(_cursorIndexOfAiTechNewsSummary);
+            }
+            final String _tmpWowMoment;
+            if (_cursor.isNull(_cursorIndexOfWowMoment)) {
+              _tmpWowMoment = null;
+            } else {
+              _tmpWowMoment = _cursor.getString(_cursorIndexOfWowMoment);
+            }
+            final String _tmpAwwMoment;
+            if (_cursor.isNull(_cursorIndexOfAwwMoment)) {
+              _tmpAwwMoment = null;
+            } else {
+              _tmpAwwMoment = _cursor.getString(_cursorIndexOfAwwMoment);
+            }
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked,_tmpAiTechNewsSummary,_tmpWowMoment,_tmpAwwMoment);
             _result.add(_item);
           }
           return _result;
@@ -306,6 +342,9 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
+          final int _cursorIndexOfAiTechNewsSummary = CursorUtil.getColumnIndexOrThrow(_cursor, "aiTechNewsSummary");
+          final int _cursorIndexOfWowMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "wowMoment");
+          final int _cursorIndexOfAwwMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "awwMoment");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final ArticleEntity _item;
@@ -379,7 +418,25 @@ public final class ArticleDao_Impl implements ArticleDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
+            final String _tmpAiTechNewsSummary;
+            if (_cursor.isNull(_cursorIndexOfAiTechNewsSummary)) {
+              _tmpAiTechNewsSummary = null;
+            } else {
+              _tmpAiTechNewsSummary = _cursor.getString(_cursorIndexOfAiTechNewsSummary);
+            }
+            final String _tmpWowMoment;
+            if (_cursor.isNull(_cursorIndexOfWowMoment)) {
+              _tmpWowMoment = null;
+            } else {
+              _tmpWowMoment = _cursor.getString(_cursorIndexOfWowMoment);
+            }
+            final String _tmpAwwMoment;
+            if (_cursor.isNull(_cursorIndexOfAwwMoment)) {
+              _tmpAwwMoment = null;
+            } else {
+              _tmpAwwMoment = _cursor.getString(_cursorIndexOfAwwMoment);
+            }
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked,_tmpAiTechNewsSummary,_tmpWowMoment,_tmpAwwMoment);
             _result.add(_item);
           }
           return _result;
@@ -427,6 +484,9 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
+          final int _cursorIndexOfAiTechNewsSummary = CursorUtil.getColumnIndexOrThrow(_cursor, "aiTechNewsSummary");
+          final int _cursorIndexOfWowMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "wowMoment");
+          final int _cursorIndexOfAwwMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "awwMoment");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final ArticleEntity _item;
@@ -500,7 +560,25 @@ public final class ArticleDao_Impl implements ArticleDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
+            final String _tmpAiTechNewsSummary;
+            if (_cursor.isNull(_cursorIndexOfAiTechNewsSummary)) {
+              _tmpAiTechNewsSummary = null;
+            } else {
+              _tmpAiTechNewsSummary = _cursor.getString(_cursorIndexOfAiTechNewsSummary);
+            }
+            final String _tmpWowMoment;
+            if (_cursor.isNull(_cursorIndexOfWowMoment)) {
+              _tmpWowMoment = null;
+            } else {
+              _tmpWowMoment = _cursor.getString(_cursorIndexOfWowMoment);
+            }
+            final String _tmpAwwMoment;
+            if (_cursor.isNull(_cursorIndexOfAwwMoment)) {
+              _tmpAwwMoment = null;
+            } else {
+              _tmpAwwMoment = _cursor.getString(_cursorIndexOfAwwMoment);
+            }
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked,_tmpAiTechNewsSummary,_tmpWowMoment,_tmpAwwMoment);
             _result.add(_item);
           }
           return _result;
@@ -544,6 +622,9 @@ public final class ArticleDao_Impl implements ArticleDao {
           final int _cursorIndexOfEntityTagsJson = CursorUtil.getColumnIndexOrThrow(_cursor, "entityTagsJson");
           final int _cursorIndexOfPublishedAt = CursorUtil.getColumnIndexOrThrow(_cursor, "publishedAt");
           final int _cursorIndexOfIsBookmarked = CursorUtil.getColumnIndexOrThrow(_cursor, "isBookmarked");
+          final int _cursorIndexOfAiTechNewsSummary = CursorUtil.getColumnIndexOrThrow(_cursor, "aiTechNewsSummary");
+          final int _cursorIndexOfWowMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "wowMoment");
+          final int _cursorIndexOfAwwMoment = CursorUtil.getColumnIndexOrThrow(_cursor, "awwMoment");
           final List<ArticleEntity> _result = new ArrayList<ArticleEntity>(_cursor.getCount());
           while (_cursor.moveToNext()) {
             final ArticleEntity _item;
@@ -617,7 +698,25 @@ public final class ArticleDao_Impl implements ArticleDao {
             final int _tmp;
             _tmp = _cursor.getInt(_cursorIndexOfIsBookmarked);
             _tmpIsBookmarked = _tmp != 0;
-            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked);
+            final String _tmpAiTechNewsSummary;
+            if (_cursor.isNull(_cursorIndexOfAiTechNewsSummary)) {
+              _tmpAiTechNewsSummary = null;
+            } else {
+              _tmpAiTechNewsSummary = _cursor.getString(_cursorIndexOfAiTechNewsSummary);
+            }
+            final String _tmpWowMoment;
+            if (_cursor.isNull(_cursorIndexOfWowMoment)) {
+              _tmpWowMoment = null;
+            } else {
+              _tmpWowMoment = _cursor.getString(_cursorIndexOfWowMoment);
+            }
+            final String _tmpAwwMoment;
+            if (_cursor.isNull(_cursorIndexOfAwwMoment)) {
+              _tmpAwwMoment = null;
+            } else {
+              _tmpAwwMoment = _cursor.getString(_cursorIndexOfAwwMoment);
+            }
+            _item = new ArticleEntity(_tmpId,_tmpTitle,_tmpSourceName,_tmpSourceUrl,_tmpCategory,_tmpDepthLevel,_tmpTldr,_tmpTakeawaysJson,_tmpCodeSnippet,_tmpFullAnalysis,_tmpGithubRepoName,_tmpGithubRepoUrl,_tmpGithubStars,_tmpMetricLabel,_tmpMetricValue,_tmpEntityTagsJson,_tmpPublishedAt,_tmpIsBookmarked,_tmpAiTechNewsSummary,_tmpWowMoment,_tmpAwwMoment);
             _result.add(_item);
           }
           return _result;
